@@ -1,4 +1,4 @@
-import { authOptions } from "@/lib/authOptions";
+﻿import { authOptions } from "@/lib/authOptions";
 import { ModeToggle } from "@/components/ModeToggle";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
         }
     });
 
-    const limits = getPlanLimits(session.user.role as any);
+    const limits = await getPlanLimits(session.user.role as any);
     const currentPlan = session.user.role;
     const maxLinks = limits.maxLinks;
     const linkDurationHours = limits.linkDurationHours;
@@ -60,7 +60,7 @@ export default async function DashboardPage() {
                                     className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 transition-all border border-blue-100/50 dark:border-blue-800/50"
                                 >
                                     <Settings size={16} />
-                                    <span>관리자</span>
+                                    <span>愿由ъ옄</span>
                                 </Link>
                             )}
                             <DashboardActions />
@@ -75,12 +75,12 @@ export default async function DashboardPage() {
             <main className="max-w-7xl mx-auto pt-32 pb-20 px-4 sm:px-6 lg:px-8 space-y-12">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className='text-3xl font-black text-gray-900 dark:text-white tracking-tight'>안녕하세요, {session.user.name || '사용자'}님</h2>
+                        <h2 className='text-3xl font-black text-gray-900 dark:text-white tracking-tight'>?덈뀞?섏꽭?? {session.user.name || '?ъ슜??}??/h2>
                         <p className='text-gray-400 text-sm font-medium mt-1'>{session.user.email}</p>
                     </div>
                     <Link href="/upload" className="hidden sm:flex items-center px-8 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-100 dark:shadow-none hover:bg-blue-700 transition-all transform hover:-translate-y-1">
                         <Plus className="-ml-1 mr-2 h-6 w-6 stroke-[3]" />
-                        새 케이스 업로드
+                        ??耳?댁뒪 ?낅줈??
                     </Link>
                 </div>
 
@@ -102,7 +102,7 @@ export default async function DashboardPage() {
                         </div>
                         <Link href="/pricing" className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#F7F9FA] dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl text-sm font-black hover:bg-gray-100 transition-all border border-transparent dark:border-gray-700">
                             <BarChart size={18} />
-                            플랜 업그레이드
+                            ?뚮옖 ?낃렇?덉씠??
                         </Link>
                     </div>
                     <div className="space-y-4">
@@ -119,7 +119,7 @@ export default async function DashboardPage() {
                         {isLimitReached && (
                             <div className="flex items-center gap-3 text-red-600 bg-red-50 dark:bg-red-900/10 px-6 py-4 rounded-2xl mt-6 border border-red-100/50">
                                 <AlertCircle size={20} />
-                                <p className="text-sm font-bold">생성 한도 초과! 업그레이드가 필요합니다.</p>
+                                <p className="text-sm font-bold">?앹꽦 ?쒕룄 珥덇낵! ?낃렇?덉씠?쒓? ?꾩슂?⑸땲??</p>
                             </div>
                         )}
                     </div>
@@ -127,7 +127,7 @@ export default async function DashboardPage() {
 
                 <div className="flex items-end justify-between px-2">
                     <div>
-                        <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-none">내 보관함</h2>
+                        <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-none">??蹂닿???/h2>
                         <div className="h-1.5 w-12 bg-blue-600 rounded-full mt-3"></div>
                     </div>
                     <div className="text-right">
@@ -142,8 +142,8 @@ export default async function DashboardPage() {
                             <div className="w-24 h-24 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-200 mb-8">
                                 <Plus size={48} />
                             </div>
-                            <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">업로드된 케이스가 없습니다</h3>
-                            <Link href="/upload" className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-4 rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-xl">지금 업로드 하기</Link>
+                            <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">?낅줈?쒕맂 耳?댁뒪媛 ?놁뒿?덈떎</h3>
+                            <Link href="/upload" className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-4 rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-xl">吏湲??낅줈???섍린</Link>
                         </div>
                     ) : (
                         <div className="bg-white dark:bg-[#111] rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800 overflow-hidden">
@@ -167,3 +167,4 @@ export default async function DashboardPage() {
         </div>
     );
 }
+
