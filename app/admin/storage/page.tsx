@@ -1,4 +1,4 @@
-﻿import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { getUserStorageStats, getLargeFiles, formatBytes } from "@/lib/storage";
 import { Users, FileText } from "lucide-react";
 import path from "path";
