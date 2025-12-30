@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { compressModel } from '@/utils/compression';
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
             const baseFileName = `${caseId}${suffix}`;
             const originalFileName = `${baseFileName}${ext}`;
 
-            let fileToUpload = buffer;
+            let fileToUpload: any = buffer;
             let fileNameToUpload = originalFileName;
             let mimeType = 'application/octet-stream';
 
@@ -122,4 +122,5 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Upload failed' }, { status: 500 });
     }
 }
+
 
