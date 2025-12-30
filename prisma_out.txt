@@ -1,0 +1,9 @@
+STDOUT:
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+STDERR:
+Error: 
+EPERM: operation not permitted, rename 'C:\Users\PC\.gemini\antigravity\brain\photonic-cluster\node_modules\.prisma\client\query_engine-windows.dll.node.tmp54940' -> 'C:\Users\PC\.gemini\antigravity\brain\photonic-cluster\node_modules\.prisma\client\query_engine-windows.dll.node'
+
+

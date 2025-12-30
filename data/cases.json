@@ -1,0 +1,239 @@
+[
+  {
+    "id": "testcase",
+    "createdAt": "2025-12-11T20:00:00.000Z",
+    "maxilla": "/uploads/testcase-maxilla.stl",
+    "mandible": "/uploads/testcase-mandible.stl",
+    "design": [
+      "/uploads/testcase-design-0.stl",
+      "/uploads/testcase-design-1.stl"
+    ]
+  },
+  {
+    "id": "simulation-test",
+    "createdAt": "2025-12-12T14:40:00.000Z",
+    "maxilla": "/uploads/upper2.stl",
+    "mandible": "/uploads/lower2.stl",
+    "design": [
+      "/uploads/crown3.stl",
+      "/uploads/crown4.stl"
+    ]
+  },
+  {
+    "id": "39751a0d-4598-47a0-9b5b-aafbd245865b",
+    "createdAt": "2025-12-12T05:44:21.371Z",
+    "design": [
+      "/uploads/39751a0d-4598-47a0-9b5b-aafbd245865b-design-0.stl",
+      "/uploads/39751a0d-4598-47a0-9b5b-aafbd245865b-design-1.stl"
+    ],
+    "maxilla": "/uploads/39751a0d-4598-47a0-9b5b-aafbd245865b-maxilla.stl",
+    "mandible": "/uploads/39751a0d-4598-47a0-9b5b-aafbd245865b-mandible.stl"
+  },
+  {
+    "id": "3ec9bf56-4744-4f5f-a403-06d035d867b1",
+    "createdAt": "2025-12-12T06:07:54.448Z",
+    "design": [
+      "/uploads/3ec9bf56-4744-4f5f-a403-06d035d867b1-design-0.stl"
+    ],
+    "maxilla": "/uploads/3ec9bf56-4744-4f5f-a403-06d035d867b1-maxilla.stl",
+    "mandible": "/uploads/3ec9bf56-4744-4f5f-a403-06d035d867b1-mandible.stl"
+  },
+  {
+    "id": "6acf5b80-b5ee-481c-a46e-688cf7f452a9",
+    "createdAt": "2025-12-12T13:29:14.292Z",
+    "design": [
+      "/uploads/6acf5b80-b5ee-481c-a46e-688cf7f452a9-design-0.dcm"
+    ],
+    "maxilla": "/uploads/6acf5b80-b5ee-481c-a46e-688cf7f452a9-maxilla.dcm",
+    "mandible": "/uploads/6acf5b80-b5ee-481c-a46e-688cf7f452a9-mandible.dcm"
+  },
+  {
+    "id": "173ebf45-f241-4d44-bce9-dd57afd1bdf4",
+    "createdAt": "2025-12-12T13:29:38.630Z",
+    "design": [],
+    "maxilla": "/uploads/173ebf45-f241-4d44-bce9-dd57afd1bdf4-maxilla.dcm",
+    "mandible": "/uploads/173ebf45-f241-4d44-bce9-dd57afd1bdf4-mandible.stl"
+  },
+  {
+    "id": "7f18ae76-2076-4010-b401-c2f63a02768b",
+    "createdAt": "2025-12-12T13:31:56.870Z",
+    "design": [
+      "/uploads/7f18ae76-2076-4010-b401-c2f63a02768b-design-0.stl",
+      "/uploads/7f18ae76-2076-4010-b401-c2f63a02768b-design-1.stl",
+      "/uploads/7f18ae76-2076-4010-b401-c2f63a02768b-design-2.stl",
+      "/uploads/7f18ae76-2076-4010-b401-c2f63a02768b-design-3.stl"
+    ],
+    "maxilla": "/uploads/7f18ae76-2076-4010-b401-c2f63a02768b-maxilla.stl",
+    "mandible": "/uploads/7f18ae76-2076-4010-b401-c2f63a02768b-mandible.stl"
+  },
+  {
+    "id": "d0451856-6530-4959-ad4d-8b9bd76ae44b",
+    "createdAt": "2025-12-12T13:45:13.516Z",
+    "design": [
+      "/uploads/d0451856-6530-4959-ad4d-8b9bd76ae44b-design-0.stl"
+    ],
+    "maxilla": "/uploads/d0451856-6530-4959-ad4d-8b9bd76ae44b-maxilla.stl",
+    "mandible": "/uploads/d0451856-6530-4959-ad4d-8b9bd76ae44b-mandible.stl"
+  },
+  {
+    "id": "369d3df6-d490-4499-a4e9-67b4b87cc6e5",
+    "createdAt": "2025-12-13T03:31:11.815Z",
+    "design": [],
+    "maxilla": "/uploads/369d3df6-d490-4499-a4e9-67b4b87cc6e5-maxilla.stl",
+    "mandible": "/uploads/369d3df6-d490-4499-a4e9-67b4b87cc6e5-mandible.stl"
+  },
+  {
+    "id": "95546210-6509-4a83-a937-06048fd0f3f5",
+    "createdAt": "2025-12-14T15:14:29.046Z",
+    "design": [
+      "/uploads/95546210-6509-4a83-a937-06048fd0f3f5-design-0.stl",
+      "/uploads/95546210-6509-4a83-a937-06048fd0f3f5-design-1.stl"
+    ],
+    "maxilla": "/uploads/95546210-6509-4a83-a937-06048fd0f3f5-maxilla.stl",
+    "mandible": "/uploads/95546210-6509-4a83-a937-06048fd0f3f5-mandible.stl"
+  },
+  {
+    "id": "d1c66b1a-20fb-4dc5-9404-582dd256da60",
+    "createdAt": "2025-12-15T00:40:16.963Z",
+    "design": [
+      "/uploads/d1c66b1a-20fb-4dc5-9404-582dd256da60-design-0.stl",
+      "/uploads/d1c66b1a-20fb-4dc5-9404-582dd256da60-design-1.stl",
+      "/uploads/d1c66b1a-20fb-4dc5-9404-582dd256da60-design-2.stl",
+      "/uploads/d1c66b1a-20fb-4dc5-9404-582dd256da60-design-3.stl"
+    ],
+    "maxilla": "/uploads/d1c66b1a-20fb-4dc5-9404-582dd256da60-maxilla.stl",
+    "mandible": "/uploads/d1c66b1a-20fb-4dc5-9404-582dd256da60-mandible.stl"
+  },
+  {
+    "id": "ce989e58-c129-471c-b40b-bed160782308",
+    "createdAt": "2025-12-15T00:50:58.119Z",
+    "design": [
+      "/uploads/ce989e58-c129-471c-b40b-bed160782308-design-0.stl"
+    ],
+    "maxilla": "/uploads/ce989e58-c129-471c-b40b-bed160782308-maxilla.stl",
+    "mandible": "/uploads/ce989e58-c129-471c-b40b-bed160782308-mandible.stl"
+  },
+  {
+    "id": "cf8b562c-c197-4bc8-b73b-9fcfdd3ca742",
+    "createdAt": "2025-12-15T01:49:09.290Z",
+    "design": [
+      "/uploads/cf8b562c-c197-4bc8-b73b-9fcfdd3ca742-design-0.dcm"
+    ],
+    "maxilla": "/uploads/cf8b562c-c197-4bc8-b73b-9fcfdd3ca742-maxilla.dcm",
+    "mandible": "/uploads/cf8b562c-c197-4bc8-b73b-9fcfdd3ca742-mandible.dcm"
+  },
+  {
+    "id": "5abe6133-ac74-4122-8f7c-75442ab1f73c",
+    "createdAt": "2025-12-15T01:50:06.716Z",
+    "design": [
+      "/uploads/5abe6133-ac74-4122-8f7c-75442ab1f73c-design-0.stl"
+    ],
+    "maxilla": "/uploads/5abe6133-ac74-4122-8f7c-75442ab1f73c-maxilla.stl",
+    "mandible": "/uploads/5abe6133-ac74-4122-8f7c-75442ab1f73c-mandible.stl"
+  },
+  {
+    "id": "d865b246-772f-4a1f-9569-7a0fe94e8e2d",
+    "createdAt": "2025-12-15T03:29:03.461Z",
+    "design": [
+      "/uploads/d865b246-772f-4a1f-9569-7a0fe94e8e2d-design-0.stl",
+      "/uploads/d865b246-772f-4a1f-9569-7a0fe94e8e2d-design-1.stl",
+      "/uploads/d865b246-772f-4a1f-9569-7a0fe94e8e2d-design-2.stl",
+      "/uploads/d865b246-772f-4a1f-9569-7a0fe94e8e2d-design-3.stl",
+      "/uploads/d865b246-772f-4a1f-9569-7a0fe94e8e2d-design-4.stl",
+      "/uploads/d865b246-772f-4a1f-9569-7a0fe94e8e2d-design-5.stl"
+    ],
+    "maxilla": "/uploads/d865b246-772f-4a1f-9569-7a0fe94e8e2d-maxilla.stl",
+    "mandible": "/uploads/d865b246-772f-4a1f-9569-7a0fe94e8e2d-mandible.stl"
+  },
+  {
+    "id": "3db852e9-ff9b-4330-b670-b8d191774018",
+    "createdAt": "2025-12-15T03:29:20.870Z",
+    "design": [
+      "/uploads/3db852e9-ff9b-4330-b670-b8d191774018-design-0.stl",
+      "/uploads/3db852e9-ff9b-4330-b670-b8d191774018-design-1.stl",
+      "/uploads/3db852e9-ff9b-4330-b670-b8d191774018-design-2.stl"
+    ],
+    "maxilla": "/uploads/3db852e9-ff9b-4330-b670-b8d191774018-maxilla.stl",
+    "mandible": "/uploads/3db852e9-ff9b-4330-b670-b8d191774018-mandible.stl"
+  },
+  {
+    "id": "dfe75afe-e950-4e39-94a9-51ced7a6bf74",
+    "createdAt": "2025-12-15T03:31:32.849Z",
+    "design": [
+      "/uploads/dfe75afe-e950-4e39-94a9-51ced7a6bf74-design-0.stl",
+      "/uploads/dfe75afe-e950-4e39-94a9-51ced7a6bf74-design-1.stl",
+      "/uploads/dfe75afe-e950-4e39-94a9-51ced7a6bf74-design-2.stl"
+    ],
+    "maxilla": "/uploads/dfe75afe-e950-4e39-94a9-51ced7a6bf74-maxilla.stl",
+    "mandible": "/uploads/dfe75afe-e950-4e39-94a9-51ced7a6bf74-mandible.stl"
+  },
+  {
+    "id": "acb81204-2357-4108-9c27-fa1163602c44",
+    "createdAt": "2025-12-15T03:32:00.309Z",
+    "design": [
+      "/uploads/acb81204-2357-4108-9c27-fa1163602c44-design-0.stl",
+      "/uploads/acb81204-2357-4108-9c27-fa1163602c44-design-1.stl",
+      "/uploads/acb81204-2357-4108-9c27-fa1163602c44-design-2.stl",
+      "/uploads/acb81204-2357-4108-9c27-fa1163602c44-design-3.stl"
+    ],
+    "maxilla": "/uploads/acb81204-2357-4108-9c27-fa1163602c44-maxilla.stl",
+    "mandible": "/uploads/acb81204-2357-4108-9c27-fa1163602c44-mandible.stl"
+  },
+  {
+    "id": "a7e07e45-8937-46b2-906b-da58f61daf2f",
+    "createdAt": "2025-12-15T04:59:03.186Z",
+    "design": [
+      "/uploads/a7e07e45-8937-46b2-906b-da58f61daf2f-design-0.stl"
+    ],
+    "maxilla": "/uploads/a7e07e45-8937-46b2-906b-da58f61daf2f-maxilla.stl",
+    "mandible": "/uploads/a7e07e45-8937-46b2-906b-da58f61daf2f-mandible.stl"
+  },
+  {
+    "id": "afbec6ad-53f9-4fbf-8d66-e27abcbaa9bc",
+    "memo": "홍길동 디자인입니다",
+    "scans": [
+      "/uploads/afbec6ad-53f9-4fbf-8d66-e27abcbaa9bc-scan-0.stl",
+      "/uploads/afbec6ad-53f9-4fbf-8d66-e27abcbaa9bc-scan-1.stl"
+    ],
+    "designs": [
+      "/uploads/afbec6ad-53f9-4fbf-8d66-e27abcbaa9bc-design-0.stl"
+    ],
+    "createdAt": "2025-12-15T05:08:04.520Z"
+  },
+  {
+    "id": "de56e0bc-86bb-4c1d-b689-22e0534fef38",
+    "memo": "홍길동 디자인입니다",
+    "scans": [
+      "/uploads/de56e0bc-86bb-4c1d-b689-22e0534fef38-scan-0.stl",
+      "/uploads/de56e0bc-86bb-4c1d-b689-22e0534fef38-scan-1.stl"
+    ],
+    "designs": [
+      "/uploads/de56e0bc-86bb-4c1d-b689-22e0534fef38-design-0.stl"
+    ],
+    "createdAt": "2025-12-15T05:14:24.942Z"
+  },
+  {
+    "id": "0557df51-6833-4143-8849-35e29e1b1e76",
+    "memo": "홍길동 디자인입니다",
+    "scans": [
+      "/uploads/0557df51-6833-4143-8849-35e29e1b1e76-scan-0.stl",
+      "/uploads/0557df51-6833-4143-8849-35e29e1b1e76-scan-1.stl"
+    ],
+    "designs": [
+      "/uploads/0557df51-6833-4143-8849-35e29e1b1e76-design-0.stl"
+    ],
+    "createdAt": "2025-12-15T05:47:55.811Z"
+  },
+  {
+    "id": "4c9ce67e-bd9a-42c8-96ab-60eb41151f86",
+    "memo": "홍길동 디자인입니다",
+    "scans": [
+      "/uploads/4c9ce67e-bd9a-42c8-96ab-60eb41151f86-scan-0.stl",
+      "/uploads/4c9ce67e-bd9a-42c8-96ab-60eb41151f86-scan-1.stl"
+    ],
+    "designs": [
+      "/uploads/4c9ce67e-bd9a-42c8-96ab-60eb41151f86-design-0.stl"
+    ],
+    "createdAt": "2025-12-15T05:51:01.791Z"
+  }
+]
