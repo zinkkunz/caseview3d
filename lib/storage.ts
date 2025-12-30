@@ -67,3 +67,39 @@ export async function getSignedFileUrl(fileName: string, expiresIn = 3600): Prom
       throw error;
   }
 }
+
+import fs from 'fs';
+import path from 'path';
+
+export function getDirectorySize(dirPath: string): number {
+  try {
+    if (!fs.existsSync(dirPath)) return 0;
+    
+    let totalSize = 0;
+    const files = fs.readdirSync(dirPath);
+
+    for (const file of files) {
+      const filePath = path.join(dirPath, file);
+      const stats = fs.statSync(filePath);
+
+      if (stats.isDirectory()) {
+        totalSize += getDirectorySize(filePath);
+      } else {
+        totalSize += stats.size;
+      }
+    }
+    return totalSize;
+  } catch (error) {
+    console.warn('Error calculating directory size:', error);
+    return 0;
+  }
+}
+
+export function formatBytes(bytes: number, decimals = 2): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
