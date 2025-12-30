@@ -167,3 +167,67 @@ export function getLargeFiles(dirPath: string, limit: number = 10): any[] {
         .sort((a, b) => b.size - a.size)
         .slice(0, limit);
 }
+
+export function getUserStorageStats(uploadsDir: string, users: any[]): any[] {
+  return users.map(user => {
+    let totalSize = 0;
+    let caseCount = 0;
+    
+    if (user.Case) {
+        caseCount = user.Case.length;
+        user.Case.forEach((c: any) => {
+            if (c.File) {
+                c.File.forEach((f: any) => {
+                    totalSize += f.size || 0;
+                });
+            }
+        });
+    }
+
+    return {
+      userId: user.id || 'unknown',
+      userName: user.name || 'Unknown',
+      userEmail: user.email || 'No Email',
+      caseCount: caseCount,
+      totalSize: totalSize
+    };
+  }).sort((a, b) => b.totalSize - a.totalSize);
+}
+
+export function getLargeFiles(dirPath: string, limit: number = 10): any[] {
+    let allFiles: { fileName: string, size: number, filePath: string }[] = [];
+    
+    function traverse(currentPath: string) {
+        if (!fs.existsSync(currentPath)) return;
+        
+        const files = fs.readdirSync(currentPath);
+        
+        for (const file of files) {
+            const filePath = path.join(currentPath, file);
+            try {
+                const stats = fs.statSync(filePath);
+                if (stats.isDirectory()) {
+                    traverse(filePath);
+                } else {
+                    allFiles.push({
+                        fileName: file,
+                        size: stats.size,
+                        filePath: filePath.replace(dirPath, '') // Relative path
+                    });
+                }
+            } catch (e) {
+                // Ignore access errors
+            }
+        }
+    }
+    
+    try {
+        traverse(dirPath);
+    } catch (e) {
+        console.error("Error scanning files", e);
+    }
+
+    return allFiles
+        .sort((a, b) => b.size - a.size)
+        .slice(0, limit);
+}
