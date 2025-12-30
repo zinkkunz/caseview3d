@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
             try {
                 if (ext.toLowerCase() === '.stl' || ext.toLowerCase() === '.ply') {
                     const compressedBuffer = await compressModel(buffer, originalFileName);
-                    fileToUpload = compressedBuffer;
+                    fileToUpload = compressedBuffer as unknown as Buffer;
                     fileNameToUpload = `${baseFileName}.glb`;
                     mimeType = 'model/gltf-binary';
                 }
@@ -122,3 +122,4 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Upload failed' }, { status: 500 });
     }
 }
+
