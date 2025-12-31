@@ -1,4 +1,9 @@
-﻿'use client';
+﻿const fs = require('fs');
+const path = require('path');
+
+const targetPath = path.join(__dirname, 'components/admin/Charts.tsx');
+
+const content = `'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -41,13 +46,13 @@ export function FileTypeChart({ data }: FileTypeChartProps) {
           cx='50%'
           cy='50%'
           labelLine={false}
-          label={({ name, percent }) => ` ${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+          label={({ name, percent }) => \` \${name}: \${((percent || 0) * 100).toFixed(0)}%\`}
           outerRadius={100}
           fill='#8884d8'
           dataKey='value'
         >
           {data.map((entry, index) => (
-            <Cell key={` cell-${index}`} fill={entry.color} />
+            <Cell key={\` cell-\${index}\`} fill={entry.color} />
           ))}
         </Pie>
         <Tooltip />
@@ -55,3 +60,7 @@ export function FileTypeChart({ data }: FileTypeChartProps) {
     </ResponsiveContainer>
   );
 }
+`;
+
+fs.writeFileSync(targetPath, content, 'utf8');
+console.log('Fixed Charts.tsx with clean UTF-8');

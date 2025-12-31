@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Html } from '@react-three/drei';
@@ -100,12 +100,10 @@ export default function MeasurementTool({ enabled }: MeasurementToolProps) {
                         <bufferGeometry attach="geometry">
                             <bufferAttribute
                                 attach="attributes-position"
-                                count={2}
-                                array={new Float32Array([
+                                args={[new Float32Array([
                                     points[0].x, points[0].y, points[0].z,
                                     points[1].x, points[1].y, points[1].z
-                                ])}
-                                itemSize={3}
+                                ]), 3]}
                             />
                         </bufferGeometry>
                         <lineBasicMaterial attach="material" color="#ef4444" linewidth={2} depthTest={false} transparent opacity={0.5} />
@@ -130,6 +128,3 @@ export default function MeasurementTool({ enabled }: MeasurementToolProps) {
         </group>
     );
 }
-
-// Added useMemo import
-import { useMemo } from 'react';

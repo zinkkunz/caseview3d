@@ -52,7 +52,7 @@ export default function ViewerClient({
     isOwner?: boolean;
 }) {
     const [caseData, setCaseData] = useState<CaseData | null>(null);
-    const [loadingData, setLoadingData] = useState(true); // Tracking data fetch, not blocking UI
+    const [loadingData, setLoadingData] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [fileOpacities, setFileOpacities] = useState<Record<string, number>>({});
     const [brightness, setBrightness] = useState(1.0);
@@ -73,7 +73,6 @@ export default function ViewerClient({
     const [annotationMode, setAnnotationMode] = useState(false);
     const [pendingAnnotation, setPendingAnnotation] = useState<THREE.Vector3 | null>(null);
 
-    // Centering & Performance
     const [staticOffset, setStaticOffset] = useState<THREE.Vector3>(new THREE.Vector3(0, 0, 0));
     const [isCentered, setIsCentered] = useState(false);
     const [loadedCount, setLoadedCount] = useState(0);
@@ -95,7 +94,6 @@ export default function ViewerClient({
                 } else if (res.status === 410 || data.error === 'Link Expired') {
                     setError('Link Expired');
                 } else {
-                    // Handle 404 or other errors gracefully
                     setError(data.error || 'Case not found');
                 }
 
@@ -181,9 +179,8 @@ export default function ViewerClient({
         setFileOpacities(prev => ({ ...prev, [filePath]: opacity }));
     };
 
-    if (error === 'Link Expired') return <ExpiredLinkPage caseId={id} isOwner={isOwner} />;
+    if (error === 'Link Expired') return <ExpiredLinkPage caseId={id}  />;
     
-    // Explicit Error Screen
     if (error) return (
         <div className="flex flex-col items-center justify-center h-screen bg-slate-50 font-bold p-4 text-slate-500">
             <AlertCircle className="mb-4 text-red-500 w-12 h-12"/>
@@ -196,7 +193,6 @@ export default function ViewerClient({
 
     return (
         <main className="w-full h-screen relative overflow-hidden" style={{ backgroundColor }}>
-            {/* 3D Scene Container */}
             <div className={`w-full h-full transition-opacity duration-700 ${modelsReady ? 'opacity-100' : 'opacity-0'}`}>
                 <Suspense fallback={null}>
                     <ErrorBoundary>
@@ -267,7 +263,6 @@ export default function ViewerClient({
                 </Suspense>
             </div>
 
-            {/* UI Layer: Shows instantly */}
             <ViewerUI
                 settings={settings}
                 files={fileList}
@@ -283,13 +278,14 @@ export default function ViewerClient({
                 onBackgroundColorChange={setBackgroundColor}
                 showOriginalColor={showOriginalColor}
                 onShowOriginalColorChange={setShowOriginalColor}
-                onTargetViewChange={setTargetView}
-                showGuide={showGuide}
-                onShowGuideChange={setShowGuide}
+                onViewChange={setTargetView}
+                isGuideOpen={showGuide}
+                onOpenGuide={() => setShowGuide(true)}
+                onCloseGuide={() => setShowGuide(false)}
                 isClippingEnabled={isClippingEnabled}
                 onToggleClipping={() => setIsClippingEnabled(!isClippingEnabled)}
                 clippingValue={clippingValue}
-                onClippingValueChange={setClippingValue}
+                onClippingChange={setClippingValue}
                 measurementMode={measurementMode}
                 onToggleMeasurement={() => setMeasurementMode(!measurementMode)}
                 isGizmoEnabled={isGizmoEnabled}
@@ -299,15 +295,16 @@ export default function ViewerClient({
                 pendingAnnotation={pendingAnnotation}
                 onCancelAnnotation={() => setPendingAnnotation(null)}
                 onSubmitAnnotation={handleAddAnnotation}
-                isOwner={isOwner}
+                hasPLY={fileList.some(f => f.path.toLowerCase().endsWith(".ply"))}
+                caseId={id}
+                
             />
             
-            {/* Dynamic Loading Feedback Overlay - Hide if Error */}
             {!error && (!modelsReady || loadingData) && (
                 <div className="absolute inset-0 flex items-center justify-center bg-stone-100/20 backdrop-blur-[2px] z-[40]">
                     <div className="flex flex-col items-center gap-6 p-10 bg-white/90 rounded-[40px] shadow-2xl border border-white/50 animate-in fade-in zoom-in duration-300">
                         <div className="relative">
-                            <Spinner size="lg" color="blue" />
+                            <Spinner size={64}  />
                             {fileList.length > 0 && (
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <span className="text-sm font-black text-blue-600">
@@ -334,3 +331,6 @@ export default function ViewerClient({
         </main>
     );
 }
+
+
+

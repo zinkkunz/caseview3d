@@ -100,9 +100,10 @@ export default function Scene({
                     <EffectComposer autoClear={false}>
                         <Outline blur={false} edgeStrength={10} width={1000} visibleEdgeColor={0x444444} hiddenEdgeColor={0x444444} />
                     </EffectComposer>
-                    <ViewControl targetView={targetView} />
+                    <ViewControl targetView={targetView || null} />
                 </Suspense>
             </Canvas>
         </div>
     );
 }
+
