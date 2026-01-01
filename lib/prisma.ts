@@ -14,4 +14,4 @@ export const prisma =
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 // Diagnostic check
-prisma.case.count().then(c => console.log('[Prisma] Total Cases:', c)).catch(e => console.error('[Prisma] Error:', e));
+// prisma.case.count().then(c => console.log('[Prisma] Total Cases:', c)).catch(e => console.error('[Prisma] Error:', e));

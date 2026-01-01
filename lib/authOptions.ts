@@ -1,4 +1,4 @@
-import { NextAuthOptions } from "next-auth";
+﻿import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import KakaoProvider from "next-auth/providers/kakao";
@@ -87,6 +87,6 @@ export const authOptions: NextAuthOptions = {
     pages: { signIn: "/login" },
     session: { strategy: "jwt" },
     secret: process.env.NEXTAUTH_SECRET,
-    trustHost: true,
     debug: true,
 };
+

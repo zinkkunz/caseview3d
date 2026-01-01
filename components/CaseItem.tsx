@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Link from "next/link";
 import { Trash2, ExternalLink, CreditCard, Share2, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
@@ -118,31 +118,33 @@ export default function CaseItem({ c }: CaseItemProps) {
 
     return (
         <div className="block hover:bg-blue-50/30 dark:hover:bg-gray-700/50 transition-all duration-300">
-            <div className="px-6 py-6 sm:px-10">
-                <div className="flex items-center justify-between gap-4">
-                    <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                            <p className="text-xl font-black text-gray-900 dark:text-gray-200 truncate tracking-tight">
+            <div className="px-5 py-5 sm:px-10 sm:py-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex flex-col min-w-0 flex-1 w-full">
+                        <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-2 flex-col sm:flex-row">
+                            <p className="text-lg sm:text-xl font-black text-gray-900 dark:text-gray-200 truncate tracking-tight">
                                 {c.memo || "제목 없음"}
                             </p>
-                            <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 rounded-full">
-                                {c.files.length} Files
-                            </span>
-                            {isPermanent && (
-                                <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-[#0061FF] border border-blue-100 rounded-full">
-                                    Premium
+                            <div className="flex items-center gap-2">
+                                <span className="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 rounded-full flex-shrink-0">
+                                    {c.files.length} Files
                                 </span>
-                            )}
+                                {isPermanent && (
+                                    <span className="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-[#0061FF] border border-blue-100 rounded-full flex-shrink-0">
+                                        Premium
+                                    </span>
+                                )}
+                            </div>
                         </div>
-                        <div className="flex items-center text-sm text-gray-400 dark:text-gray-500 font-medium">
+                        <div className="flex items-center text-xs sm:text-sm text-gray-400 dark:text-gray-500 font-medium">
                             <span className="mr-3">ID: {c.id.substring(0, 8)}</span>
                             <span className="w-1 h-1 bg-gray-200 rounded-full mr-3"></span>
                             <span>업로드: {new Date(c.createdAt).toLocaleDateString()}</span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <div className="hidden sm:flex items-center mr-6 border-r border-gray-100 pr-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto mt-4 sm:mt-0">
+                        <div className="flex items-center w-full sm:w-auto sm:border-r border-gray-100 sm:pr-6">
                             {!isPermanent && (
                                 <div className={`flex items-center gap-1.5 font-bold ${expiryInfo.className}`}>
                                     {expiryInfo.icon}
@@ -157,36 +159,40 @@ export default function CaseItem({ c }: CaseItemProps) {
                             )}
                         </div>
 
-                        <div className="flex items-center space-x-2">
-                            {/* ShareModal Replaces Old Button */}
-                            <ShareModal caseId={c.id} />
-                            
-                            <Link
-                                href={`/viewer/${c.id}`}
-                                target="_blank"
-                                className="w-12 h-12 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-[#0061FF] dark:hover:text-blue-400 rounded-2xl hover:bg-white dark:hover:bg-gray-800 hover:shadow-md transition-all border border-transparent hover:border-blue-50"
-                                title="뷰어 열기"
-                            >
-                                <ExternalLink size={22} />
-                            </Link>
+                        <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+                            <div className="flex items-center gap-2">
+                                {/* ShareModal Replaces Old Button */}
+                                <ShareModal caseId={c.id} />
 
-                            {!isPermanent && !expiryInfo.isExpired && (
-                                <button
-                                    onClick={() => handlePayment(c.id)}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-black text-white text-xs font-black rounded-xl shadow-lg shadow-gray-200 dark:shadow-none transition-all transform hover:-translate-y-1"
+                                <Link
+                                    href={`/viewer/${c.id}`}
+                                    target="_blank"
+                                    className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-[#0061FF] dark:hover:text-blue-400 rounded-2xl hover:bg-white dark:hover:bg-gray-800 hover:shadow-md transition-all border border-transparent hover:border-blue-50"
+                                    title="뷰어 열기"
                                 >
-                                    <CreditCard size={14} />
-                                    연장하기
-                                </button>
-                            )}
+                                    <ExternalLink size={20} className="sm:w-[22px] sm:h-[22px]" />
+                                </Link>
+                            </div>
 
-                            <button
-                                onClick={() => handleDelete(c.id)}
-                                className="w-12 h-12 flex items-center justify-center text-gray-300 hover:text-red-500 rounded-2xl hover:bg-white dark:hover:bg-gray-800 transition-all"
-                                title="삭제"
-                            >
-                                <Trash2 size={22} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                {!isPermanent && !expiryInfo.isExpired && (
+                                    <button
+                                        onClick={() => handlePayment(c.id)}
+                                        className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-900 hover:bg-black text-white text-xs font-black rounded-xl shadow-lg shadow-gray-200 dark:shadow-none transition-all transform hover:-translate-y-1 whitespace-nowrap"
+                                    >
+                                        <CreditCard size={14} />
+                                        연장하기
+                                    </button>
+                                )}
+
+                                <button
+                                    onClick={() => handleDelete(c.id)}
+                                    className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-gray-300 hover:text-red-500 rounded-2xl hover:bg-white dark:hover:bg-gray-800 transition-all"
+                                    title="삭제"
+                                >
+                                    <Trash2 size={20} className="sm:w-[22px] sm:h-[22px]" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

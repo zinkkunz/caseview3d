@@ -29,6 +29,11 @@ export const PLAN_LIMITS = {
         maxLinks: 1000,
         linkDurationHours: 720,
         label: 'Business'
+    },
+    ADMIN: {
+        maxLinks: 99999,
+        linkDurationHours: 8760, // 1 year
+        label: 'Admin'
     }
 } as const;
 
@@ -45,13 +50,14 @@ export async function canCreateLink(userId: string): Promise<{
     });
     if (!user) return { allowed: false, reason: 'PLAN_EXPIRED' };
     const plan = (user.plan as Plan) || 'FREE';
-    
+
     // 만료 체크 (무료 요금제는 만료가 없음)
     if (plan !== 'FREE' && user.planEndDate && new Date() > user.planEndDate) {
         return { allowed: false, reason: 'PLAN_EXPIRED' };
     }
 
     const activeLinkCount = await getUserActiveLinkCount(userId);
+    // @ts-ignore
     const maxLinks = PLAN_LIMITS[plan]?.maxLinks ?? 1;
 
     if (activeLinkCount >= maxLinks) {
@@ -78,6 +84,7 @@ export async function getUserActiveLinkCount(userId: string): Promise<number> {
 }
 
 export function calculateExpiryDate(plan: Plan): Date {
+    // @ts-ignore
     const hours = PLAN_LIMITS[plan]?.linkDurationHours ?? 2;
     const expiryDate = new Date();
     expiryDate.setHours(expiryDate.getHours() + hours);
@@ -86,6 +93,7 @@ export function calculateExpiryDate(plan: Plan): Date {
 
 export async function getPlanLimits(plan: Plan) {
     const planLimit = await prisma.planLimit.findUnique({ where: { plan } });
+    // @ts-ignore
     if (!planLimit) return PLAN_LIMITS[plan];
     return { maxLinks: planLimit.maxLinks, linkDurationHours: planLimit.linkDurationHours };
 }

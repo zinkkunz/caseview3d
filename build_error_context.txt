@@ -1,0 +1,108 @@
+﻿
+> dental-3d-viewer@0.1.0 build
+> next build
+
+   ??Next.js 16.0.8 (Turbopack)
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ??Compiled successfully in 5.6s
+   Running TypeScript ...
+   Collecting page data using 11 workers ...
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+node.exe : Error: Neither a
+piKey nor config.authentica
+tor provided
+위치 줄:1 문자:1
++ & "C:\Program Files\nodej
+s/node.exe" "C:\Program Fil
+es\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (Err  
+  or: Neither ...icator    
+ provided:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+    at module evaluation (C
+:\Users\PC\.gemini\antigrav
+ity\brain\photonic-cluster\
+.next\server\chunks\[root-o
+f-the-server]__4fe183f5._.j
+s:1:3785)
+    at instantiateModule (C
+:\Users\PC\.gemini\antigrav
+ity\brain\photonic-cluster\
+.next\server\chunks\[turbop
+ack]_runtime.js:715:9)
+    at instantiateRuntimeMo
+dule (C:\Users\PC\.gemini\a
+ntigravity\brain\photonic-c
+luster\.next\server\chunks\
+[turbopack]_runtime.js:743:
+12)
+    at getOrInstantiateRunt
+imeModule (C:\Users\PC\.gem
+ini\antigravity\brain\photo
+nic-cluster\.next\server\ch
+unks\[turbopack]_runtime.js
+:756:12)
+    at Object.m (C:\Users\P
+C\.gemini\antigravity\brain
+\photonic-cluster\.next\ser
+ver\chunks\[turbopack]_runt
+ime.js:765:18)
+    at Object.<anonymous> (
+C:\Users\PC\.gemini\antigra
+vity\brain\photonic-cluster
+\.next\server\app\api\payme
+nts\stripe\webhook\route.js
+:7:3)
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[Prisma] Initializing client...
+[Prisma] DB_URL from Env: postgresql://postgres.gwuqetiqotpcrzvbqjme:hFd-BUYqy8Hvxsa@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+
+> Build error occurred
+Error: Failed to collect pa
+ge data for /api/payments/s
+tripe/webhook
+    at ignore-listed frames
+ {
+  type: 'Error'
+}

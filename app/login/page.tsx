@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import LoginForm from '@/components/auth/LoginForm';
 import { getSettings } from '../admin/settings/actions';
 

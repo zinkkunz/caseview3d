@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import Stripe from 'stripe';
 import { logPayment, updateUserPlan, PlanType } from '@/lib/payments';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder', {
   apiVersion: '2024-11-20.acacia' as any,
 });
 

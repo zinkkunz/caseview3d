@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { Metadata } from 'next';
 import ViewerClient from '@/components/ViewerClient';
 import { prisma } from '@/lib/prisma';

@@ -39,7 +39,7 @@ export async function compressModel(fileBuffer: Buffer, fileName: string): Promi
         
         // Initialize NodeIO with KHR_draco_mesh_compression support
         const io = new NodeIO()
-            .registerExtensionsAll(require('@gltf-transform/extensions'))
+            .registerExtensions(require('@gltf-transform/extensions'))
             .registerDependencies({
                 'draco3d.decoder': await import('draco3d').then(m => m.default.createDecoderModule()),
                 'draco3d.encoder': await import('draco3d').then(m => m.default.createEncoderModule()),
@@ -74,3 +74,4 @@ export async function compressModel(fileBuffer: Buffer, fileName: string): Promi
         });
     }
 }
+

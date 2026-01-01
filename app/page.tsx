@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import DropboxHero from '@/components/landing/DropboxHero';
 import WorkflowSection from '@/components/landing/WorkflowSection';
 import DetailedFeatures from '@/components/landing/DetailedFeatures';

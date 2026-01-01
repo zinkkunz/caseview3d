@@ -1,4 +1,5 @@
-import { prisma } from '@/lib/prisma';
+export const dynamic = 'force-dynamic';
+﻿import { prisma } from '@/lib/prisma';
 import { Users, FileBox, HardDrive, TrendingUp, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import { getDirectorySize, formatBytes } from '@/lib/storage';
 import path from 'path';
@@ -84,30 +85,10 @@ export default async function AdminDashboard() {
       
       {/* Stats Cards */}
       <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
-        <StatCard 
-          title='총 사용자' 
-          value={userCount.toString()} 
-          icon={Users} 
-          color='bg-blue-500' 
-        />
-        <StatCard 
-          title='총 케이스' 
-          value={caseCount.toString()} 
-          icon={FileBox} 
-          color='bg-green-500' 
-        />
-        <StatCard 
-          title='스토리지 사용량' 
-          value={formattedSize} 
-          icon={HardDrive} 
-          color='bg-purple-500' 
-        />
-        <StatCard 
-          title='평균 파일 수/케이스' 
-          value={avgFileCount} 
-          icon={BarChart3} 
-          color='bg-orange-500' 
-        />
+        <StatCard title='총 사용자' value={userCount.toString()} icon={Users} color='bg-blue-500' />
+        <StatCard title='총 케이스' value={caseCount.toString()} icon={FileBox} color='bg-green-500' />
+        <StatCard title='스토리지 사용량' value={formattedSize} icon={HardDrive} color='bg-purple-500' />
+        <StatCard title='평균 파일 수/케이스' value={avgFileCount} icon={BarChart3} color='bg-orange-500' />
       </div>
 
       {/* Charts */}
@@ -198,3 +179,4 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: s
     </div>
   );
 }
+

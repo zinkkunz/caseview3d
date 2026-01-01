@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 ﻿import { prisma } from '@/lib/prisma';
 import { deleteCase } from '../actions';
 import { Trash2, FileBox, AlertCircle } from 'lucide-react';
@@ -109,3 +110,4 @@ export default async function CasesPage({ searchParams }: { searchParams: { quer
     </div>
   );
 }
+

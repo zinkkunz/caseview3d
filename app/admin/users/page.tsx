@@ -1,4 +1,5 @@
-import { prisma } from '@/lib/prisma';
+export const dynamic = 'force-dynamic';
+﻿import { prisma } from '@/lib/prisma';
 import { updateUserRole, deleteUser, toggleUserStatus } from '../actions';
 import { MoreHorizontal, Shield, Trash2, UserCog, Ban, CheckCircle } from 'lucide-react';
 import UserSearch from '@/components/admin/UserSearch';
@@ -72,7 +73,7 @@ export default async function UsersPage({ searchParams }: { searchParams: { quer
                                     <td className='px-6 py-4'>
                                         <span className={` px-2 py-1 rounded text-xs flex items-center gap-1 w-fit ${user.isActive ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200'}`}>
                                             {user.isActive ? <CheckCircle size={12} /> : <Ban size={12} />}
-                                            {user.isActive ? '활성' : '차단됨'}
+                                            {user.isActive ? '활성' : '차단'}
                                         </span>
                                     </td>
                                     <td className='px-6 py-4'>
@@ -101,3 +102,4 @@ export default async function UsersPage({ searchParams }: { searchParams: { quer
         </div>
     );
 }
+
