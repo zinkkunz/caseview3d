@@ -1,15 +1,27 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import Stripe from 'stripe';
 import { logPayment, updateUserPlan, PlanType } from '@/lib/payments';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder', {
-  apiVersion: '2024-11-20.acacia' as any,
-});
+// Initialize Stripe safely to prevent build errors
+let stripe: Stripe | null = null;
+try {
+    const key = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';
+    stripe = new Stripe(key, {
+        apiVersion: '2024-11-20.acacia' as any,
+        typescript: true,
+    });
+} catch (e) {
+    console.warn('Stripe initialization failed (OK during build):', e);
+}
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req: Request) {
+  if (!stripe) {
+      return NextResponse.json({ error: 'Stripe not initialized' }, { status: 500 });
+  }
+
   const body = await req.text();
   const sig = req.headers.get('stripe-signature');
 
@@ -17,22 +29,21 @@ export async function POST(req: Request) {
 
   try {
     if (!sig || !endpointSecret) {
-      // 개발 단계에서는 서명 검증을 건너뛰거나 에러 처리
       console.warn('Stripe signature or endpoint secret missing. Skipping verification for testing.');
       event = JSON.parse(body);
     } else {
       event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
     }
   } catch (err: any) {
-    console.error(`Webhook Error: ${err.message}`);
-    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+    console.error('Webhook Error:', err.message);
+    return NextResponse.json({ error: 'Webhook Error: ' + err.message }, { status: 400 });
   }
 
   // Handle the event
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object as Stripe.Checkout.Session;
-      console.log(`Payment successful for checkout session: ${session.id}`);
+      console.log('Payment successful for checkout session:', session.id);
       
       const userId = session.metadata?.userId || session.client_reference_id;
       const plan = session.metadata?.plan as PlanType;
@@ -48,16 +59,15 @@ export async function POST(req: Request) {
         });
 
         await updateUserPlan(userId, plan);
-        console.log(`User ${userId} upgraded to ${plan} via Stripe`);
+        console.log('User upgraded via Stripe:', userId, plan);
       }
       break;
     
     case 'invoice.payment_failed':
-      // Handle failed payment
       break;
 
     default:
-      console.log(`Unhandled event type ${event.type}`);
+      console.log('Unhandled event type', event.type);
   }
 
   return NextResponse.json({ received: true });
