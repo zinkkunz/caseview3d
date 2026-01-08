@@ -122,5 +122,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Upload failed' }, { status: 500 });
     }
 }
-
+export async function OPTIONS() {
+    return NextResponse.json({}, {
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+    });
+}
 
