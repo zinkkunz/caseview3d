@@ -1,0 +1,82 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authOptions";
+import { canCreateLink, calculateExpiryDate } from '@/lib/plan-limits';
+import { Plan } from '@/lib/types';
+import { v4 as uuidv4 } from 'uuid';
+
+export async function POST(request: NextRequest) {
+    try {
+        const session = await getServerSession(authOptions);
+        const userId = session?.user?.id;
+        let userPlan: Plan = 'FREE';
+
+        // Plan Limit Check
+        if (userId) {
+            const check = await canCreateLink(userId);
+            if (!check.allowed) {
+                return NextResponse.json({
+                    success: false,
+                    error: check.reason === 'MAX_LINKS_EXCEEDED' ? 'LIMIT_EXCEEDED' : 'PLAN_EXPIRED',
+                    data: {
+                        reason: check.reason,
+                        currentCount: check.currentCount,
+                        maxLinks: check.maxLinks
+                    }
+                }, { status: 403 });
+            }
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { plan: true }
+            });
+            if (user && user.plan) {
+                userPlan = user.plan as Plan;
+            }
+        }
+
+        const body = await request.json();
+        const { files, memo } = body;
+        
+        // files: { key: string, type: 'scan' | 'design', size: number }[]
+        // caseId can be generated here or passed from client. Let's generate here for safety unless pre-generated.
+        // Actually, if we use the presigned URLs with a specific ID, we might want to group them.
+        // But the caseId in DB is just a record. 
+        const caseId = uuidv4(); 
+
+        if (!files || !Array.isArray(files) || files.length === 0) {
+            return NextResponse.json({ success: false, error: 'No files provided' }, { status: 400 });
+        }
+
+        const expiryDate = calculateExpiryDate(userPlan);
+        let finalUserId = null;
+        if (userId) {
+             const userExists = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { id: true }
+            });
+            if (userExists) finalUserId = userId;
+        }
+
+        await prisma.case.create({
+            data: {
+                id: caseId,
+                memo: memo || '',
+                userId: finalUserId,
+                expiryDate: expiryDate,
+                File: {
+                    create: files.map((f: any) => ({
+                        path: f.key, // The R2 key
+                        type: f.type,
+                        size: f.size
+                    }))
+                }
+            }
+        });
+
+        return NextResponse.json({ success: true, caseId, link: `/viewer/${caseId}` });
+    } catch (error) {
+        console.error('Case creation error:', error);
+        return NextResponse.json({ success: false, error: 'Case creation failed' }, { status: 500 });
+    }
+}
