@@ -53,12 +53,13 @@ export async function POST(request: NextRequest) {
             let mimeType = 'application/octet-stream';
 
             try {
-                if (ext.toLowerCase() === '.stl' || ext.toLowerCase() === '.ply') {
-                    const compressedBuffer = await compressModel(buffer, originalFileName);
-                    fileToUpload = compressedBuffer as unknown as Buffer;
-                    fileNameToUpload = `${baseFileName}.glb`;
-                    mimeType = 'model/gltf-binary';
-                }
+                // [DEBUG] Temporarily disable compression to isolate Cloud 500 cause
+                // if (ext.toLowerCase() === '.stl' || ext.toLowerCase() === '.ply') {
+                //     const compressedBuffer = await compressModel(buffer, originalFileName);
+                //     fileToUpload = compressedBuffer as unknown as Buffer;
+                //     fileNameToUpload = `${baseFileName}.glb`;
+                //     mimeType = 'model/gltf-binary';
+                // }
             } catch (err) {
                 console.error(`Compression failed for ${originalFileName}, utilizing original.`, err);
             }
