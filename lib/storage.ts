@@ -1,11 +1,8 @@
 ﻿import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import fs from 'fs';
-import path from 'path';
 
 // Lazy Load S3 Client
 let r2ClientInstance: S3Client | null = null;
-const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME; // Keep global for utility functions, but checking inside functions
 
 function getR2Client() {
   if (!r2ClientInstance) {
@@ -49,7 +46,7 @@ export async function deleteFileFromR2(fileName: string): Promise<void> {
   const command = new DeleteObjectCommand({
     Bucket: process.env.R2_BUCKET_NAME,
     Key: fileName,
-  });
+    });
 
   await getR2Client().send(command);
 }
@@ -71,30 +68,6 @@ export async function getSignedFileUrl(fileName: string, expiresIn = 3600): Prom
   } catch (error) {
       console.error('[R2] Sign Error:', error);
       throw error;
-  }
-}
-
-export function getDirectorySize(dirPath: string): number {
-  try {
-    if (!fs.existsSync(dirPath)) return 0;
-    
-    let totalSize = 0;
-    const files = fs.readdirSync(dirPath);
-
-    for (const file of files) {
-      const filePath = path.join(dirPath, file);
-      const stats = fs.statSync(filePath);
-
-      if (stats.isDirectory()) {
-        totalSize += getDirectorySize(filePath);
-      } else {
-        totalSize += stats.size;
-      }
-    }
-    return totalSize;
-  } catch (error) {
-    console.warn('Error calculating directory size:', error);
-    return 0;
   }
 }
 
@@ -131,44 +104,6 @@ export function getUserStorageStats(uploadsDir: string, users: any[]): any[] {
       totalSize: totalSize
     };
   }).sort((a, b) => b.totalSize - a.totalSize);
-}
-
-export function getLargeFiles(dirPath: string, limit: number = 10): any[] {
-    let allFiles: { fileName: string, size: number, filePath: string }[] = [];
-    
-    function traverse(currentPath: string) {
-        if (!fs.existsSync(currentPath)) return;
-        
-        const files = fs.readdirSync(currentPath);
-        
-        for (const file of files) {
-            const filePath = path.join(currentPath, file);
-            try {
-                const stats = fs.statSync(filePath);
-                if (stats.isDirectory()) {
-                    traverse(filePath);
-                } else {
-                    allFiles.push({
-                        fileName: file,
-                        size: stats.size,
-                        filePath: filePath.replace(dirPath, '') // Relative path
-                    });
-                }
-            } catch (e) {
-                // Ignore access errors
-            }
-        }
-    }
-    
-    try {
-        traverse(dirPath);
-    } catch (e) {
-        console.error("Error scanning files", e);
-    }
-
-    return allFiles
-        .sort((a, b) => b.size - a.size)
-        .slice(0, limit);
 }
 
 export async function getPresignedUploadUrl(fileName: string, contentType: string, expiresIn = 600): Promise<{ url: string, key: string }> {
