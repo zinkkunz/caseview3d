@@ -1,7 +1,7 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { compressModel } from '@/utils/compression';
+// import { compressModel } from '@/utils/compression';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
