@@ -46,9 +46,12 @@ export default async function DashboardPage() {
             }
         });
 
-        console.log("[DEBUG] Getting plan limits for role:", session.user.role);
-        const limits = await getPlanLimits(session.user.role as any);
-        const currentPlan = session.user.role;
+        console.log("[DEBUG] Getting plan limits for plan:", session.user.plan);
+        // Fix: Use session.user.plan instead of role, default to FREE if undefined
+        const planKey = (session.user.plan || 'FREE') as any;
+        const limits = await getPlanLimits(planKey) || { maxLinks: 1, linkDurationHours: 2 };
+        const currentPlan = session.user.plan || 'FREE';
+
         const maxLinks = limits.maxLinks;
         const linkDurationHours = limits.linkDurationHours;
         const usagePercent = Math.min((activeLinkCount / maxLinks) * 100, 100);

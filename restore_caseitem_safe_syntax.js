@@ -1,4 +1,7 @@
-'use client';
+﻿const fs = require('fs');
+const path = require('path');
+
+const content = `'use client';
 
 import Link from "next/link";
 import { Trash2, ExternalLink, CreditCard, Share2, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
@@ -116,8 +119,8 @@ export default function CaseItem({ c }: CaseItemProps) {
         });
     };
 
-    const handleDelete = async (caseId: string) => {
-        if (!confirm('정말 삭제하시겠습니까?\n 삭제된 데이터는 복구할 수 없습니다.')) return;
+    const handleDelete = async (caseId) => {
+        if (!confirm('정말 삭제하시겠습니까?\\n 삭제된 데이터는 복구할 수 없습니다.')) return;
 
         try {
             const res = await fetch('/api/cases/' + caseId, {
@@ -136,14 +139,35 @@ export default function CaseItem({ c }: CaseItemProps) {
     };
 
     if (!mounted) {
+        const isPermanent = !c.expiryDate;
         return (
-            <div className="block p-5 border-b">
-                 <div className="animate-pulse flex space-x-4">
-                    <div className="flex-1 space-y-4 py-1">
-                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                         <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="block hover:bg-blue-50/30 dark:hover:bg-gray-700/50 transition-all duration-300">
+                <div className="px-5 py-5 sm:px-10 sm:py-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex flex-col min-w-0 flex-1 w-full">
+                            <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-2 flex-col sm:flex-row">
+                                <p className="text-lg sm:text-xl font-black text-gray-900 dark:text-gray-200 truncate tracking-tight">
+                                    {c.memo || "제목 없음"}
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <span className="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 rounded-full flex-shrink-0">
+                                        {c.files.length} Files
+                                    </span>
+                                    {isPermanent && (
+                                        <span className="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest bg-indigo-50 text-[#0061FF] border border-blue-100 rounded-full flex-shrink-0">
+                                            Premium
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex items-center text-xs sm:text-sm text-gray-400 dark:text-gray-500 font-medium">
+                                <span className="mr-3">ID: {c.id.substring(0, 8)}</span>
+                                <span className="w-1 h-1 bg-gray-200 rounded-full mr-3"></span>
+                                <span>업로드: {new Date(c.createdAt).toLocaleDateString()}</span>
+                            </div>
+                        </div>
                     </div>
-                 </div>
+                </div>
             </div>
         );
     }
@@ -154,11 +178,12 @@ export default function CaseItem({ c }: CaseItemProps) {
         <div className="block hover:bg-blue-50/30 dark:hover:bg-gray-700/50 transition-all duration-300">
             <div className="px-5 py-5 sm:px-10 sm:py-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    {/* Left Side: Title and Info */}
                     <div className="flex flex-col min-w-0 flex-1 w-full">
                         <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-2 flex-col sm:flex-row">
-                             <p className="text-lg font-black">{c.memo || "No Title"}</p>
-                             <div className="flex items-center gap-2">
+                            <p className="text-lg sm:text-xl font-black text-gray-900 dark:text-gray-200 truncate tracking-tight">
+                                {c.memo || "제목 없음"}
+                            </p>
+                            <div className="flex items-center gap-2">
                                 <span className="px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-500 rounded-full flex-shrink-0">
                                     {c.files.length} Files
                                 </span>
@@ -167,15 +192,15 @@ export default function CaseItem({ c }: CaseItemProps) {
                                         Premium
                                     </span>
                                 )}
-                             </div>
+                            </div>
                         </div>
                         <div className="flex items-center text-xs sm:text-sm text-gray-400 dark:text-gray-500 font-medium">
                             <span className="mr-3">ID: {c.id.substring(0, 8)}</span>
-                            <span>Date: {new Date(c.createdAt).toLocaleDateString()}</span>
+                            <span className="w-1 h-1 bg-gray-200 rounded-full mr-3"></span>
+                            <span>업로드: {new Date(c.createdAt).toLocaleDateString()}</span>
                         </div>
                     </div>
 
-                    {/* Right Side: Expiry and Actions */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto mt-4 sm:mt-0">
                         <div className="flex items-center w-full sm:w-auto sm:border-r border-gray-100 sm:pr-6">
                             {!isPermanent && (
@@ -187,7 +212,7 @@ export default function CaseItem({ c }: CaseItemProps) {
                             {isPermanent && (
                                 <div className="flex items-center gap-1.5 text-indigo-500 font-bold">
                                     <CheckCircle2 size={16} />
-                                    <span className="text-xs uppercase tracking-tighter">Running</span>
+                                    <span className="text-xs uppercase tracking-tighter">영구 보관</span>
                                 </div>
                             )}
                         </div>
@@ -198,9 +223,10 @@ export default function CaseItem({ c }: CaseItemProps) {
                                 <Link
                                     href={'/viewer/' + c.id}
                                     target="_blank"
-                                    className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-blue-500 border rounded-2xl"
+                                    className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-[#0061FF] dark:hover:text-blue-400 rounded-2xl hover:bg-white dark:hover:bg-gray-800 hover:shadow-md transition-all border border-transparent hover:border-blue-50"
+                                    title="뷰어 열기"
                                 >
-                                    <ExternalLink size={20} />
+                                    <ExternalLink size={20} className="sm:w-[22px] sm:h-[22px]" />
                                 </Link>
                             </div>
 
@@ -208,24 +234,33 @@ export default function CaseItem({ c }: CaseItemProps) {
                                 {!isPermanent && !expiryInfo.isExpired && (
                                     <button
                                         onClick={() => handlePayment(c.id)}
-                                        className="flex items-center gap-2 px-3 py-2 bg-gray-900 text-white text-xs font-black rounded-xl"
+                                        className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-900 hover:bg-black text-white text-xs font-black rounded-xl shadow-lg shadow-gray-200 dark:shadow-none transition-all transform hover:-translate-y-1 whitespace-nowrap"
                                     >
                                         <CreditCard size={14} />
-                                        Extend
+                                        연장하기
                                     </button>
                                 )}
 
                                 <button
                                     onClick={() => handleDelete(c.id)}
-                                    className="w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-500 rounded-2xl"
+                                    className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-gray-300 hover:text-red-500 rounded-2xl hover:bg-white dark:hover:bg-gray-800 transition-all"
+                                    title="삭제"
                                 >
-                                    <Trash2 size={20} />
+                                    <Trash2 size={20} className="sm:w-[22px] sm:h-[22px]" />
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+}
+`;
+
+const filePath = path.join(process.cwd(), 'components', 'CaseItem.tsx');
+try {
+    fs.writeFileSync(filePath, content, { encoding: 'utf8' });
+    console.log('Successfully wrote to ' + filePath);
+} catch (err) {
+    console.error('Error writing file:', err);
 }

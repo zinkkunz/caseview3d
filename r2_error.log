@@ -1,0 +1,12 @@
+Uploading test-verification-file.txt...
+R2 verification FAILED: Error: R2_BUCKET_NAME is not defined
+    at uploadFileToR2 (C:\Users\PC\.gemini\antigravity\brain\photonic-cluster\lib\storage.ts:25:30)
+    at main (C:\Users\PC\.gemini\antigravity\brain\photonic-cluster\verify-r2.ts:9:30)
+    at <anonymous> (C:\Users\PC\.gemini\antigravity\brain\photonic-cluster\verify-r2.ts:23:1)
+    at Object.<anonymous> (C:\Users\PC\.gemini\antigravity\brain\photonic-cluster\verify-r2.ts:23:6)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object.transformer (C:\Users\PC\.gemini\antigravity\brain\photonic-cluster\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)

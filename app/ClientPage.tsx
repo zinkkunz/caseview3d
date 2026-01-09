@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useRef, useEffect } from 'react';
 import { Upload, Check, Copy, FileBox, Hexagon, LayoutDashboard, LogIn, Settings, ArrowRight, Mail, MessageCircle } from 'lucide-react';
 import ProgressBar from '@/components/ProgressBar';
@@ -48,7 +48,7 @@ export default function ClientPage({ settings }: { settings: Record<string, stri
             if (event.lengthComputable) {
                 const progress = Math.min((event.loaded / event.total) * 100, 99);
                 setUploadProgress(progress);
-                setStatusMessage('파일 업로드 중...');
+                setStatusMessage('파일 업로드 및 처리 중... (잠시만 기다려주세요)');
             }
         };
         
@@ -60,20 +60,28 @@ export default function ClientPage({ settings }: { settings: Record<string, stri
                         setUploadProgress(100);
                         setStatusMessage('완료!');
                         setGeneratedLink(window.location.origin + '/viewer/' + data.caseId);
+                    } else {
+                        alert('업로드 실패: ' + (data.error || '알 수 없는 오류'));
+                        setUploading(false);
                     }
                 } catch (e) { 
+                    console.error("JSON Parse Error:", e, xhr.responseText);
                     alert('서버 응답 처리 중 오류가 발생했습니다.'); 
+                    setUploading(false);
                 }
             } else if (xhr.status === 403) {
                 try {
                     const data = JSON.parse(xhr.responseText);
                     setUpgradeReason(data.data?.reason || 'MAX_LINKS_EXCEEDED');
                     setShowUpgradeModal(true);
-                } catch (e) {}
+                    setUploading(false);
+                } catch (e) {
+                    setUploading(false);
+                }
             } else {
                 alert('업로드에 실패했습니다. (Error: ' + xhr.status + ')');
+                setUploading(false);
             }
-            setUploading(false);
         };
         
         xhr.onerror = () => {
@@ -93,8 +101,6 @@ export default function ClientPage({ settings }: { settings: Record<string, stri
 
     const handleShareKakao = () => {
         if (!generatedLink) return;
-        // Using common Kakao Sharer URL (requires a Registered App Key)
-        // Fallon to Web Share API if possible
         const shareUrl = generatedLink;
         if (navigator.share) {
             navigator.share({

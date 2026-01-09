@@ -68,22 +68,20 @@ export async function POST(request: NextRequest) {
             return { path: fileNameToUpload, type: key, size: fileToUpload.length };
         };
 
-        const filesToCreate: { path: string, type: string, size: number }[] = [];
         const scanFiles = formData.getAll('scans') as File[];
-        for (let i = 0; i < scanFiles.length; i++) {
-            if (scanFiles[i].size > 0) {
-                const result = await saveAndCompress(scanFiles[i], 'scan', i);
-                filesToCreate.push(result);
-            }
-        }
-
         const designFiles = formData.getAll('designs') as File[];
-        for (let i = 0; i < designFiles.length; i++) {
-            if (designFiles[i].size > 0) {
-                const result = await saveAndCompress(designFiles[i], 'design', i);
-                filesToCreate.push(result);
-            }
-        }
+        
+        // Parallel processing of all files
+        const scanPromises = scanFiles.map((file, i) => 
+            file.size > 0 ? saveAndCompress(file as File, 'scan', i) : null
+        );
+        
+        const designPromises = designFiles.map((file, i) => 
+            file.size > 0 ? saveAndCompress(file as File, 'design', i) : null
+        );
+
+        const results = await Promise.all([...scanPromises, ...designPromises]);
+        const filesToCreate = results.filter((r): r is { path: string, type: string, size: number } => r !== null);
 
         try {
             const expiryDate = calculateExpiryDate(userPlan);
@@ -104,7 +102,7 @@ export async function POST(request: NextRequest) {
                     expiryDate: expiryDate,
                     File: {
                         create: filesToCreate.map(f => ({
-                            path: f.path, // This matches what is returned by saveAndCompress (fileNameToUpload)
+                            path: f.path, 
                             type: f.type,
                             size: f.size
                         }))
@@ -122,6 +120,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Upload failed' }, { status: 500 });
     }
 }
+
 export async function OPTIONS() {
     return NextResponse.json({}, {
         headers: {
@@ -131,4 +130,3 @@ export async function OPTIONS() {
         },
     });
 }
-

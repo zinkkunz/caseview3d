@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -34,17 +34,14 @@ export async function deleteUser(userId: string) {
 
 export async function deleteCase(caseId: string) {
     try {
-        // 1. Get file paths before deletion
         const files = await prisma.file.findMany({
             where: { caseId }
         });
 
-        // 2. Delete the case (Cascade deletes File records in DB)
         await prisma.case.delete({
             where: { id: caseId }
         });
 
-        // 3. Delete physical files
         for (const file of files) {
             const absolutePath = path.join(UPLOAD_DIR, file.path);
             try {
@@ -58,6 +55,7 @@ export async function deleteCase(caseId: string) {
 
         revalidatePath("/admin/cases");
         revalidatePath("/admin");
+        revalidatePath("/dashboard");
         return { success: true, message: "Case and associated files deleted successfully" };
     } catch (error) {
         console.error("Delete case error:", error);
@@ -81,21 +79,15 @@ export async function toggleUserStatus(userId: string, isActive: boolean) {
 export async function deleteExpiredCases() {
     console.log('Deleting expired cases...');
     try {
-        const now = new Date(new Date().getTime() + 1000 * 60); // 1 minute buffer for safety
+        const now = new Date(new Date().getTime() + 1000 * 60); 
 
-        // 1. Find all expired cases
         const expiredCases = await prisma.case.findMany({
             where: {
-                expiryDate: {
-                    lt: now
-                }
+                expiryDate: { lt: now }
             },
-            include: {
-                File: true
-            }
+            include: { File: true }
         });
 
-        console.log(`Found ${expiredCases.length} expired cases`);
         if (expiredCases.length === 0) {
             return { success: true, message: "만료된 케이스가 없습니다.", count: 0 };
         }
@@ -103,16 +95,10 @@ export async function deleteExpiredCases() {
         const caseIds = expiredCases.map(c => c.id);
         const allFilePaths = expiredCases.flatMap(c => c.File.map(f => f.path));
 
-        // 2. Delete the cases
         const result = await prisma.case.deleteMany({
-            where: {
-                id: {
-                    in: caseIds
-                }
-            }
+            where: { id: { in: caseIds } }
         });
 
-        // 3. Delete physical files
         for (const filePath of allFilePaths) {
             const absolutePath = path.join(UPLOAD_DIR, filePath);
             try {
@@ -136,7 +122,10 @@ export async function deleteExpiredCases() {
 export async function updateUserPlan(userId: string, newPlan: string) {
     console.log(`Updating user ${userId} plan to ${newPlan}`);
     try {
-        const data: any = { plan: newPlan };
+        const oneYearFromNow = new Date();
+        oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+        
+        const data: any = { plan: newPlan, planEndDate: oneYearFromNow };
         await prisma.user.update({
             where: { id: userId },
             data: data,

@@ -1,4 +1,7 @@
-'use client';
+﻿const fs = require('fs');
+const path = require('path');
+
+const content = `'use client';
 
 import Link from "next/link";
 import { Trash2, ExternalLink, CreditCard, Share2, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
@@ -117,7 +120,7 @@ export default function CaseItem({ c }: CaseItemProps) {
     };
 
     const handleDelete = async (caseId: string) => {
-        if (!confirm('정말 삭제하시겠습니까?\n 삭제된 데이터는 복구할 수 없습니다.')) return;
+        if (!confirm('정말 삭제하시겠습니까?\\n 삭제된 데이터는 복구할 수 없습니다.')) return;
 
         try {
             const res = await fetch('/api/cases/' + caseId, {
@@ -228,4 +231,13 @@ export default function CaseItem({ c }: CaseItemProps) {
             </div>
         </div>
     );
+}
+`;
+
+const filePath = path.join(process.cwd(), 'components', 'CaseItem.tsx');
+try {
+    fs.writeFileSync(filePath, content, { encoding: 'utf8' });
+    console.log('Successfully wrote Phase 4C component to ' + filePath);
+} catch (err) {
+    console.error('Error writing file:', err);
 }

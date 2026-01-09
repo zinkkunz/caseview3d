@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { updateUserPlan } from '@/app/admin/actions';
@@ -49,14 +49,14 @@ export default function UserPlanSelect({ userId, currentPlan }: UserPlanSelectPr
                 onChange={handleChange}
                 disabled={isUpdating}
                 className={`bg-white border text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pr-8 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''
-                    } ${plan === 'FREE' ? 'text-green-600 border-green-200 bg-green-50' :
-                        plan === 'BASIC' ? 'text-blue-600 border-blue-200 bg-blue-50' :
-                            'text-orange-600 border-orange-200 bg-orange-50'
                     }`}
             >
                 <option value="FREE">FREE</option>
                 <option value="BASIC">BASIC</option>
                 <option value="STANDARD">STANDARD</option>
+                <option value="PRO">PRO</option>
+                <option value="BUSINESS">BUSINESS (무제한)</option>
+                <option value="ADMIN">ADMIN (관리자)</option>
             </select>
             {isUpdating && (
                 <div className="absolute right-2 top-1/2 transform -translate-y-1/2">

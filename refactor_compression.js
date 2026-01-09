@@ -1,4 +1,7 @@
-import { NodeIO } from '@gltf-transform/core';
+﻿const fs = require('fs');
+const path = require('path');
+
+const content = `import { NodeIO } from '@gltf-transform/core';
 import { draco } from '@gltf-transform/functions';
 import { execSync } from 'child_process';
 import fs from 'fs';
@@ -15,8 +18,8 @@ export async function compressModel(fileBuffer: Buffer, fileName: string): Promi
     // Use system temp directory for compatibility with read-only environments (e.g. Vercel)
     const tempDir = os.tmpdir();
     const sessionId = uuidv4();
-    const inputPath = path.join(tempDir, `${sessionId}.${ext}`);
-    const intermediateGlbPath = path.join(tempDir, `${sessionId}.glb`);
+    const inputPath = path.join(tempDir, \`\${sessionId}.\${ext}\`);
+    const intermediateGlbPath = path.join(tempDir, \`\${sessionId}.glb\`);
     // Python script path - might not be accessible or executable in all cloud envs
     const pythonScriptPath = path.join(process.cwd(), 'utils', 'stl_to_glb.py');
 
@@ -44,10 +47,10 @@ export async function compressModel(fileBuffer: Buffer, fileName: string): Promi
             // keep default 'python' or fail later
         }
 
-        console.log(`[Compression] Converting ${ext} to GLB via ${pythonCommand}...`);
+        console.log(\`[Compression] Converting \${ext} to GLB via \${pythonCommand}...\`);
         
         try {
-            execSync(`${pythonCommand} "${pythonScriptPath}" "${inputPath}" "${intermediateGlbPath}"`, { stdio: 'inherit' });
+            execSync(\`\${pythonCommand} "\${pythonScriptPath}" "\${inputPath}" "\${intermediateGlbPath}"\`, { stdio: 'inherit' });
         } catch (pyErr) {
             console.error('[Compression] Python execution failed:', pyErr);
             throw new Error('Python execution failed');
@@ -58,7 +61,7 @@ export async function compressModel(fileBuffer: Buffer, fileName: string): Promi
         }
 
         // 3. Apply Draco Compression using gltf-transform
-        console.log(`[Compression] Optimizing with Draco...`);
+        console.log(\`[Compression] Optimizing with Draco...\`);
         
         const io = new NodeIO()
             .registerExtensions(require('@gltf-transform/extensions'))
@@ -81,7 +84,7 @@ export async function compressModel(fileBuffer: Buffer, fileName: string): Promi
         );
 
         const compressedBuffer = await io.writeBinary(document);
-        console.log(`[Compression] Success! Original: ${fs.statSync(intermediateGlbPath).size} bytes -> Compressed: ${compressedBuffer.length} bytes`);
+        console.log(\`[Compression] Success! Original: \${fs.statSync(intermediateGlbPath).size} bytes -> Compressed: \${compressedBuffer.length} bytes\`);
         
         return Buffer.from(compressedBuffer);
 
@@ -104,4 +107,13 @@ export async function compressModel(fileBuffer: Buffer, fileName: string): Promi
             }
         });
     }
+}
+`;
+
+const filePath = path.join(process.cwd(), 'utils', 'compression.ts');
+try {
+    fs.writeFileSync(filePath, content, { encoding: 'utf8' });
+    console.log('Successfully refactored compression.ts at ' + filePath);
+} catch (err) {
+    console.error('Error writing file:', err);
 }

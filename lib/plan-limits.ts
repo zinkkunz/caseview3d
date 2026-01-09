@@ -1,8 +1,7 @@
-// lib/plan-limits.ts
-import { prisma } from '@/lib/prisma';
+﻿import { prisma } from '@/lib/prisma';
 import type { Plan } from './types';
 
-// 요금제별 제한 값 (사용자 요청 정책 반영: FREE 1/2h, BASIC 3/6h, STANDARD 10/24h)
+// 요금제별 제한 값 (FREE/BASIC은 제한, ADMIN/BUSINESS는 무제한)
 export const PLAN_LIMITS = {
     FREE: {
         maxLinks: 1,
@@ -19,20 +18,19 @@ export const PLAN_LIMITS = {
         linkDurationHours: 24,
         label: 'Standard'
     },
-    // 상위 플랜은 추후 확장을 위해 정의
     PRO: {
         maxLinks: 50,
         linkDurationHours: 168,
         label: 'Pro'
     },
     BUSINESS: {
-        maxLinks: 1000,
-        linkDurationHours: 720,
+        maxLinks: 99999, // 사실상 무제한
+        linkDurationHours: 8760, // 1년
         label: 'Business'
     },
     ADMIN: {
-        maxLinks: 99999,
-        linkDurationHours: 8760, // 1 year
+        maxLinks: 99999, // 사실상 무제한
+        linkDurationHours: 87600, // 10년
         label: 'Admin'
     }
 } as const;
@@ -46,9 +44,15 @@ export async function canCreateLink(userId: string): Promise<{
     if (!userId) return { allowed: false, reason: 'PLAN_EXPIRED' };
     const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { plan: true, planEndDate: true },
+        select: { plan: true, planEndDate: true, role: true },
     });
     if (!user) return { allowed: false, reason: 'PLAN_EXPIRED' };
+    
+    // ADMIN 권한을 가진 사용자는 플랜과 상관없이 무제한
+    if (user.role === 'ADMIN') {
+        return { allowed: true };
+    }
+
     const plan = (user.plan as Plan) || 'FREE';
 
     // 만료 체크 (무료 요금제는 만료가 없음)
