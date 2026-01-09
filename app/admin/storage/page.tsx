@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
-﻿import { prisma } from "@/lib/prisma";
-import { getUserStorageStats, getLargeFiles, formatBytes } from "@/lib/storage";
+import { prisma } from "@/lib/prisma";
+import { getUserStorageStats, formatBytes } from "@/lib/storage";
+import { getLargeFiles } from "@/lib/server-utils";
 import { Users, FileText } from "lucide-react";
 import path from "path";
 
@@ -53,7 +54,7 @@ export default async function StoragePage() {
                 <th className="px-6 py-3">이메일</th>
                 <th className="px-6 py-3">케이스 수</th>
                 <th className="px-6 py-3">사용 용량</th>
-                <th className="px-6 py-3">鍮꾩쑉</th>
+                <th className="px-6 py-3">비율</th>
               </tr>
             </thead>
             <tbody>
@@ -104,7 +105,7 @@ export default async function StoragePage() {
                 <th className="px-6 py-3">순위</th>
                 <th className="px-6 py-3">파일명</th>
                 <th className="px-6 py-3">크기</th>
-                <th className="px-6 py-3">寃쎈줈</th>
+                <th className="px-6 py-3">경로</th>
               </tr>
             </thead>
             <tbody>
@@ -130,4 +131,3 @@ export default async function StoragePage() {
     </div>
   );
 }
-

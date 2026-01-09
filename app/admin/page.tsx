@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic';
-﻿import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { Users, FileBox, HardDrive, TrendingUp, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
-import { getDirectorySize, formatBytes } from '@/lib/storage';
+import { formatBytes } from '@/lib/storage';
+import { getDirectorySize } from '@/lib/server-utils';
 import path from 'path';
 import { GrowthChart, FileTypeChart } from '@/components/admin/Charts';
 
@@ -179,4 +180,3 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: s
     </div>
   );
 }
-
