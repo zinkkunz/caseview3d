@@ -40,3 +40,4 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: 'Failed to generate upload URL' }, { status: 500 });
     }
 }
+// Force redeploy: 2026-01-09 13:38:16
