@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic';
-﻿import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { getUserStorageStats, formatBytes } from "@/lib/storage";
 import { getLargeFiles } from "@/lib/server-utils";
 import { Users, FileText } from "lucide-react";
@@ -31,9 +31,9 @@ export default async function StoragePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">?�??공간 모니?�링</h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">저장 공간 모니터링</h1>
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          ?�체 ?�용?? <span className="font-bold text-gray-900 dark:text-gray-100">{formatBytes(totalStorage)}</span>
+          전체 사용량: <span className="font-bold text-gray-900 dark:text-gray-100">{formatBytes(totalStorage)}</span>
         </div>
       </div>
 
@@ -42,19 +42,19 @@ export default async function StoragePage() {
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h3 className="font-semibold text-gray-700 flex items-center gap-2 dark:text-gray-200">
             <Users size={18} />
-            ?�용?�별 ?�량 ?�위 (?�위 20�?
+            사용자별 용량 순위 (상위 20명)
           </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
               <tr>
-                <th className="px-6 py-3">?�위</th>
-                <th className="px-6 py-3">?�용??/th>
-                <th className="px-6 py-3">?�메??/th>
-                <th className="px-6 py-3">케?�스 ??/th>
-                <th className="px-6 py-3">?�용 ?�량</th>
-                <th className="px-6 py-3">??��??/th>
+                <th className="px-6 py-3">순위</th>
+                <th className="px-6 py-3">사용자</th>
+                <th className="px-6 py-3">이메일</th>
+                <th className="px-6 py-3">케이스 수</th>
+                <th className="px-6 py-3">사용 용량</th>
+                <th className="px-6 py-3">비율</th>
               </tr>
             </thead>
             <tbody>
@@ -82,7 +82,7 @@ export default async function StoragePage() {
               })}
               {topUsers.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center dark:text-gray-400">?�이?��? ?�습?�다.</td>
+                  <td colSpan={6} className="px-6 py-4 text-center dark:text-gray-400">데이터가 없습니다.</td>
                 </tr>
               )}
             </tbody>
@@ -95,17 +95,17 @@ export default async function StoragePage() {
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h3 className="font-semibold text-gray-700 flex items-center gap-2 dark:text-gray-200">
             <FileText size={18} />
-            ?�?�량 ?�일 (10MB ?�상, ?�위 20�?
+            대용량 파일 (10MB 이상, 상위 20개)
           </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
               <tr>
-                <th className="px-6 py-3">?�위</th>
-                <th className="px-6 py-3">?�일�?/th>
-                <th className="px-6 py-3">?�기</th>
-                <th className="px-6 py-3">寃쎈�?/th>
+                <th className="px-6 py-3">순위</th>
+                <th className="px-6 py-3">파일명</th>
+                <th className="px-6 py-3">크기</th>
+                <th className="px-6 py-3">경로</th>
               </tr>
             </thead>
             <tbody>
@@ -121,7 +121,7 @@ export default async function StoragePage() {
               ))}
               {topLargeFiles.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center dark:text-gray-400">10MB ?�상???�일???�습?�다.</td>
+                  <td colSpan={4} className="px-6 py-4 text-center dark:text-gray-400">10MB 이상의 파일이 없습니다.</td>
                 </tr>
               )}
             </tbody>
@@ -131,4 +131,3 @@ export default async function StoragePage() {
     </div>
   );
 }
-
