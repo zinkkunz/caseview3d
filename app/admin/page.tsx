@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic';
 ﻿import { prisma } from '@/lib/prisma';
 import { Users, FileBox, HardDrive, TrendingUp, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
-import { getDirectorySize, formatBytes } from '@/lib/storage';
+import { formatBytes } from '@/lib/storage';
+import { getDirectorySize } from '@/lib/server-utils';
 import path from 'path';
 import { GrowthChart, FileTypeChart } from '@/components/admin/Charts';
 
@@ -81,14 +82,14 @@ export default async function AdminDashboard() {
 
   return (
     <div className='space-y-6'>
-      <h1 className='text-2xl font-bold text-gray-800 dark:text-gray-100'>대시보드</h1>
+      <h1 className='text-2xl font-bold text-gray-800 dark:text-gray-100'>?�?�보??/h1>
       
       {/* Stats Cards */}
       <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
-        <StatCard title='총 사용자' value={userCount.toString()} icon={Users} color='bg-blue-500' />
-        <StatCard title='총 케이스' value={caseCount.toString()} icon={FileBox} color='bg-green-500' />
-        <StatCard title='스토리지 사용량' value={formattedSize} icon={HardDrive} color='bg-purple-500' />
-        <StatCard title='평균 파일 수/케이스' value={avgFileCount} icon={BarChart3} color='bg-orange-500' />
+        <StatCard title='�??�용?? value={userCount.toString()} icon={Users} color='bg-blue-500' />
+        <StatCard title='�?케?�스' value={caseCount.toString()} icon={FileBox} color='bg-green-500' />
+        <StatCard title='?�토리�? ?�용?? value={formattedSize} icon={HardDrive} color='bg-purple-500' />
+        <StatCard title='?�균 ?�일 ??케?�스' value={avgFileCount} icon={BarChart3} color='bg-orange-500' />
       </div>
 
       {/* Charts */}
@@ -97,7 +98,7 @@ export default async function AdminDashboard() {
         <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6 dark:bg-gray-800 dark:border-gray-700'>
           <h3 className='font-semibold text-gray-700 flex items-center gap-2 mb-4 dark:text-gray-200'>
             <TrendingUp size={18} />
-            최근 7일 성장 추이
+            최근 7???�장 추이
           </h3>
           <GrowthChart data={growthData} />
         </div>
@@ -106,13 +107,13 @@ export default async function AdminDashboard() {
         <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-6 dark:bg-gray-800 dark:border-gray-700'>
           <h3 className='font-semibold text-gray-700 flex items-center gap-2 mb-4 dark:text-gray-200'>
             <PieChartIcon size={18} />
-            파일 타입별 분포
+            ?�일 ?�?�별 분포
           </h3>
           {fileTypeData.length > 0 ? (
             <FileTypeChart data={fileTypeData} />
           ) : (
             <div className='h-[300px] flex items-center justify-center text-gray-400'>
-              데이터가 없습니다
+              ?�이?��? ?�습?�다
             </div>
           )}
         </div>
@@ -123,17 +124,16 @@ export default async function AdminDashboard() {
         <div className='px-6 py-4 border-b border-gray-200 dark:border-gray-700'>
           <h3 className='font-semibold text-gray-700 flex items-center gap-2 dark:text-gray-200'>
             <TrendingUp size={18} />
-            최근 가입한 사용자
-          </h3>
+            최근 가?�한 ?�용??          </h3>
         </div>
         <div className='overflow-x-auto'>
           <table className='w-full text-sm text-left text-gray-500 dark:text-gray-400'>
             <thead className='text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300'>
               <tr>
-                <th className='px-6 py-3'>이름</th>
-                <th className='px-6 py-3'>이메일</th>
+                <th className='px-6 py-3'>?�름</th>
+                <th className='px-6 py-3'>?�메??/th>
                 <th className='px-6 py-3'>권한</th>
-                <th className='px-6 py-3'>가입일</th>
+                <th className='px-6 py-3'>가?�일</th>
               </tr>
             </thead>
             <tbody>
@@ -155,7 +155,7 @@ export default async function AdminDashboard() {
               ))}
               {recentUsers.length === 0 && (
                  <tr>
-                    <td colSpan={4} className='px-6 py-4 text-center dark:text-gray-400'>사용자가 없습니다.</td>
+                    <td colSpan={4} className='px-6 py-4 text-center dark:text-gray-400'>?�용?��? ?�습?�다.</td>
                  </tr>
               )}
             </tbody>
