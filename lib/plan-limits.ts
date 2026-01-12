@@ -1,7 +1,7 @@
-﻿import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import type { Plan } from './types';
 
-// 요금제별 제한 값 (FREE/BASIC은 제한, ADMIN/BUSINESS는 무제한)
+// 요금제별 제한 값
 export const PLAN_LIMITS = {
     FREE: {
         maxLinks: 1,
@@ -9,30 +9,24 @@ export const PLAN_LIMITS = {
         label: 'Free'
     },
     BASIC: {
-        maxLinks: 3,
-        linkDurationHours: 6,
+        maxLinks: 5,
+        linkDurationHours: 24, // 1일
         label: 'Basic'
     },
-    STANDARD: {
-        maxLinks: 10,
-        linkDurationHours: 24,
-        label: 'Standard'
-    },
     PRO: {
-        maxLinks: 50,
-        linkDurationHours: 168,
+        maxLinks: 20,
+        linkDurationHours: 72, // 3일
         label: 'Pro'
     },
-    BUSINESS: {
-        maxLinks: 99999, // 사실상 무제한
-        linkDurationHours: 8760, // 1년
-        label: 'Business'
+    ENTERPRISE: {
+        maxLinks: 99999, // 무제한
+        linkDurationHours: 87600, // 10년 (영구)
+        label: 'Enterprise'
     },
-    ADMIN: {
-        maxLinks: 99999, // 사실상 무제한
-        linkDurationHours: 87600, // 10년
-        label: 'Admin'
-    }
+    // 기존 호환성 유지
+    STANDARD: { maxLinks: 10, linkDurationHours: 72, label: 'Standard (Deprecated)' },
+    BUSINESS: { maxLinks: 99999, linkDurationHours: 87600, label: 'Business (Deprecated)' },
+    ADMIN: { maxLinks: 99999, linkDurationHours: 87600, label: 'Admin' }
 } as const;
 
 export async function canCreateLink(userId: string): Promise<{
@@ -47,16 +41,15 @@ export async function canCreateLink(userId: string): Promise<{
         select: { plan: true, planEndDate: true, role: true },
     });
     if (!user) return { allowed: false, reason: 'PLAN_EXPIRED' };
-    
-    // ADMIN 권한을 가진 사용자는 플랜과 상관없이 무제한
+
     if (user.role === 'ADMIN') {
         return { allowed: true };
     }
 
     const plan = (user.plan as Plan) || 'FREE';
 
-    // 만료 체크 (무료 요금제는 만료가 없음)
-    if (plan !== 'FREE' && user.planEndDate && new Date() > user.planEndDate) {
+    // 만료 체크 (무료/Enterprise는 만료 없음)
+    if (plan !== 'FREE' && plan !== 'ENTERPRISE' && user.planEndDate && new Date() > user.planEndDate) {
         return { allowed: false, reason: 'PLAN_EXPIRED' };
     }
 
