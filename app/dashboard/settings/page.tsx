@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { User, Shield, CreditCard, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import ChangePasswordModal from '@/components/ChangePasswordModal'; // Direct import
 
 export default function SettingsPage() {
     const searchParams = useSearchParams();
@@ -60,8 +61,8 @@ export default function SettingsPage() {
 function NavButton({ active, href, icon, label }: { active: boolean, href: string, icon: React.ReactNode, label: string }) {
     return (
         <Link href={href} className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${active
-                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+            ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+            : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}>
             {icon}
             <span>{label}</span>
@@ -102,15 +103,21 @@ function ProfileSettings() {
 }
 
 function SecuritySettings() {
+    const [open, setOpen] = useState(false);
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
                 <h2 className="text-xl font-bold mb-4">비밀번호 변경</h2>
                 <p className="text-gray-500 mb-6">계정 보안을 위해 주기적으로 비밀번호를 변경해주세요.</p>
-                <button className="flex items-center gap-2 px-6 py-3 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition-colors">
+                <button
+                    onClick={() => setOpen(true)}
+                    className="flex items-center gap-2 px-6 py-3 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition-colors"
+                >
                     <Shield size={18} />
                     비밀번호 변경하기
                 </button>
+                <ChangePasswordModal isOpen={open} onClose={() => setOpen(false)} />
             </div>
         </div>
     );
