@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Layers, Zap, ShieldCheck } from 'lucide-react';
 
@@ -9,7 +9,7 @@ const detailedFeatures = [
         description: '별도의 프로그램 설치 없이 웹 브라우저만으로 고해상도 STL 데이터를 실시간으로 랜더링합니다. 줌, 회전, 투명도 조절 기능을 통해 정밀한 디자인 검토가 가능합니다.',
         icon: Layers,
         color: 'bg-blue-600',
-        image: 'https://images.unsplash.com/photo-1598133594931-385016202422?q=80&w=1000&auto=format&fit=crop'
+        image: '/images/landing/viewer_mockup.png'
     },
     {
         title: '즉각적인 공유 시스템',
@@ -17,15 +17,15 @@ const detailedFeatures = [
         description: '디자인 파일을 올리자마자 생성되는 고유 링크를 치과에 전달하세요. 치과의사는 모바일 카톡에서도 즉석에서 확인하고 컨펌할 수 있습니다.',
         icon: Zap,
         color: 'bg-orange-500',
-        image: 'https://images.unsplash.com/photo-1588776814546-1ffce47267a5?q=80&w=1000&auto=format&fit=crop'
+        image: '/images/landing/dashboard_mockup.png'
     },
     {
         title: '자동 데이터 보존 정책',
         subtitle: '보안은 기본, 공간은 효율적으로',
-        description: '일정 기간이 지나면 공유된 데이터가 자동으로 삭제되어 보안 사고를 예방하고 스토리지 공간을 효율적으로 관리할 수 있습니다.',
+        description: '일정 기간이 지나면 공유된 데이터가 자동으로 삭제되어 보안 사고를 예방하고 스토리지 공간을 효율적으로 관리할 수 있습니다. 비밀번호 설정으로 보안을 강화하세요.',
         icon: ShieldCheck,
         color: 'bg-green-600',
-        image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=1000&auto=format&fit=crop'
+        image: '/images/landing/mobile_secure_mockup.png'
     }
 ];
 
@@ -47,11 +47,12 @@ export default function DetailedFeatures() {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex-1 w-full aspect-video rounded-[3rem] overflow-hidden shadow-2xl relative group">
+                        <div className="flex-1 w-full aspect-video rounded-[3rem] overflow-hidden shadow-2xl relative group bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                            {/* Use img tag for direct static asset access */}
                             <img 
                                 src={feature.image} 
                                 alt={feature.title}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </div>

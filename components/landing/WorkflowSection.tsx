@@ -1,6 +1,7 @@
-'use client';
+﻿'use client';
 
 import { Upload, Link as LinkIcon, Share2 } from 'lucide-react';
+import WorkflowVisual from './WorkflowVisual';
 
 const steps = [
     {
@@ -27,7 +28,7 @@ export default function WorkflowSection() {
     return (
         <section className="py-24 bg-gray-50 dark:bg-black transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-24">
+                <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-gray-100 mb-8 tracking-tight">
                         업로드부터 공유까지,<br />가장 직관적인 흐름
                     </h2>
@@ -37,20 +38,25 @@ export default function WorkflowSection() {
                     </p>
                 </div>
 
-                <div className="relative">
-                    {/* Connection line (desktop) */}
-                    <div className="hidden lg:block absolute top-[40px] left-[15%] right-[15%] h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-800 to-transparent"></div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    {/* Left: Animation Visual */}
+                    <div className="order-2 lg:order-1">
+                        <WorkflowVisual />
+                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-20 md:gap-8 relative z-10">
-                        {steps.map((step, index) => (
-                            <div key={index} className="flex flex-col items-center text-center group">
-                                <div className={`w-20 h-20 ${step.color} rounded-2xl flex items-center justify-center mb-10 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-2`}>
-                                    <step.icon size={32} strokeWidth={2.5} />
+                    {/* Right: Steps List */}
+                    <div className="order-1 lg:order-2 space-y-12">
+                         {steps.map((step, index) => (
+                            <div key={index} className="flex gap-6 group">
+                                <div className={`w-16 h-16 shrink-0 ${step.color} rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110`}>
+                                    <step.icon size={28} strokeWidth={2.5} />
                                 </div>
-                                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{step.title}</h3>
-                                <p className="text-gray-500 dark:text-gray-400 leading-relaxed max-w-xs mx-auto text-sm">
-                                    {step.description}
-                                </p>
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">{step.title}</h3>
+                                    <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-base">
+                                        {step.description}
+                                    </p>
+                                </div>
                             </div>
                         ))}
                     </div>
