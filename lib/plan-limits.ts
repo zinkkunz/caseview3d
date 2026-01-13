@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';
+﻿import { prisma } from '@/lib/prisma';
 import type { Plan } from './types';
 
 // 요금제별 제한 값
@@ -46,14 +46,16 @@ export async function canCreateLink(userId: string): Promise<{
     });
     if (!user) return { allowed: false, reason: 'PLAN_EXPIRED' };
 
+    // ADMIN 역할은 무조건 허용
     if (user.role === 'ADMIN') {
         return { allowed: true };
     }
 
     const plan = (user.plan as Plan) || 'FREE';
 
-    // 만료 체크 (무료/Enterprise는 만료 없음)
-    if (plan !== 'FREE' && plan !== 'ENTERPRISE' && user.planEndDate && new Date() > user.planEndDate) {
+    // 만료 체크 (무료/Enterprise/Admin 플랜은 만료 없음)
+    // FIX: ADMIN 플랜도 만료 체크에서 제외
+    if (plan !== 'FREE' && plan !== 'ENTERPRISE' && plan !== 'ADMIN' && user.planEndDate && new Date() > user.planEndDate) {
         return { allowed: false, reason: 'PLAN_EXPIRED' };
     }
 
