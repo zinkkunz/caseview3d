@@ -148,4 +148,6 @@ model Link {
   
   createdAt   DateTime  @default(now())
   createdBy   String?
+  
+  password    String?   // Added for Password Protection
 }

@@ -4,6 +4,8 @@ import { useSearchParams } from 'next/navigation';
 import { User, Shield, CreditCard, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation'; // Added useRouter
 import ChangePasswordModal from '@/components/ChangePasswordModal'; // Direct import
 
 export default function SettingsPage() {
@@ -71,18 +73,53 @@ function NavButton({ active, href, icon, label }: { active: boolean, href: strin
 }
 
 function ProfileSettings() {
+    const { data: session, update } = useSession();
+    const [name, setName] = useState(session?.user?.name || '');
+    const [loading, setLoading] = useState(false);
+
+    const handleUpdateProfile = async () => {
+        if (!name.trim()) return alert('이름을 입력해주세요.');
+        setLoading(true);
+        try {
+            const res = await fetch('/api/user', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name }),
+            });
+
+            if (!res.ok) throw new Error('Failed to update');
+
+            alert('프로필이 수정되었습니다.');
+            window.location.reload(); // Refresh to show new name in header
+        } catch (error) {
+            console.error(error);
+            alert('수정 중 오류가 발생했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
                 <h2 className="text-xl font-bold mb-4">내 프로필</h2>
                 <div className="flex items-center gap-6">
-                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-gray-300">
-                        <User size={40} />
+                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-gray-300 overflow-hidden relative group cursor-pointer border border-gray-200 dark:border-gray-700">
+                        {session?.user?.image ? (
+                            <img src={session.user.image} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            <User size={40} />
+                        )}
+                        {/* Hover Overlay for Upload Hint */}
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-bold">
+                            변경
+                        </div>
                     </div>
                     <div>
-                        <button className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-bold hover:bg-gray-800">
-                            사진 변경
+                        <button className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-bold hover:bg-gray-800 transition-colors">
+                            사진 변경 (준비중)
                         </button>
+                        <p className="text-xs text-gray-400 mt-2">JPG, PNG, GIF (최대 2MB)</p>
                     </div>
                 </div>
             </div>
@@ -90,12 +127,36 @@ function ProfileSettings() {
             <div className="grid gap-6 max-w-md">
                 <div>
                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">이름</label>
-                    <input type="text" className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800" placeholder="사용자 이름" disabled />
-                    <p className="text-xs text-gray-400 mt-1">* 이름 변경은 관리자에게 문의하세요.</p>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="사용자 이름"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                        />
+                        <button
+                            onClick={handleUpdateProfile}
+                            disabled={loading || name === session?.user?.name}
+                            className={`px-6 rounded-xl font-bold text-sm transition-all ${loading || name === session?.user?.name
+                                ? 'bg-gray-100 text-gray-400'
+                                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200'
+                                }`}
+                        >
+                            {loading ? '...' : '저장'}
+                        </button>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">실명이나 기공소 이름을 사용하세요.</p>
                 </div>
                 <div>
                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">이메일</label>
-                    <input type="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800" placeholder="user@example.com" disabled />
+                    <input
+                        type="email"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 cursor-not-allowed text-gray-400"
+                        value={session?.user?.email || ''}
+                        disabled
+                    />
+                    <p className="text-xs text-gray-400 mt-2">이메일 변경은 불가능합니다.</p>
                 </div>
             </div>
         </div>
@@ -104,6 +165,35 @@ function ProfileSettings() {
 
 function SecuritySettings() {
     const [open, setOpen] = useState(false);
+    const { data: session } = useSession(); // Import useSession
+    const router = useRouter(); // Import useRouter
+
+    const handleDeleteAccount = async () => {
+        const confirmed = confirm('정말로 탈퇴하시겠습니까?\n이 작업은 되돌릴 수 없으며, 모든 데이터(케이스, 파일)가 영구적으로 삭제됩니다.');
+        if (!confirmed) return;
+
+        const doubleConfirmed = prompt('확인을 위해 "탈퇴"라고 입력해주세요.');
+        if (doubleConfirmed !== '탈퇴') {
+            alert('입력이 일치하지 않습니다.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/user', {
+                method: 'DELETE',
+            });
+
+            if (res.ok) {
+                alert('계정이 삭제되었습니다. 이용해주셔서 감사합니다.');
+                window.location.href = '/'; // Force reload to clear session
+            } else {
+                alert('탈퇴 처리에 실패했습니다. 관리자에게 문의해주세요.');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('오류가 발생했습니다.');
+        }
+    };
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -118,6 +208,19 @@ function SecuritySettings() {
                     비밀번호 변경하기
                 </button>
                 <ChangePasswordModal isOpen={open} onClose={() => setOpen(false)} />
+            </div>
+            <hr className="border-gray-100 dark:border-gray-800" />
+
+            {/* Account Deletion Area (Placeholder for Phase 4) */}
+            <div>
+                <h2 className="text-xl font-bold mb-4 text-red-600">계정 삭제</h2>
+                <p className="text-gray-500 mb-4">계정을 삭제하면 모든 데이터가 영구적으로 제거됩니다.</p>
+                <button
+                    onClick={handleDeleteAccount}
+                    className="px-6 py-3 border border-red-200 text-red-600 font-bold rounded-xl hover:bg-red-50 transition-colors"
+                >
+                    계정 탈퇴
+                </button>
             </div>
         </div>
     );

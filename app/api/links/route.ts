@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { PrismaClient } from '@prisma/client';
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { caseId, expiresAt, maxViews, description } = body;
+        const { caseId, expiresAt, maxViews, description, password } = body;
 
         console.log('[API] Creating link for case:', caseId);
 
@@ -26,15 +26,41 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing caseId' }, { status: 400 });
         }
 
-        // Verify ownership
+        // Verify ownership and plan
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { plan: true, role: true }
+        });
+
         const caseItem = await prisma.case.findUnique({
             where: { id: caseId },
             select: { userId: true }
         });
 
         if (!caseItem || caseItem.userId !== session.user.id) {
-             console.error('[API] Case not found or unauthorized:', caseId);
-             return NextResponse.json({ error: 'Case not found or access denied' }, { status: 404 });
+            console.error('[API] Case not found or unauthorized:', caseId);
+            return NextResponse.json({ error: 'Case not found or access denied' }, { status: 404 });
+        }
+
+        // Password Feature Check
+        let passwordHash: string | null = null;
+        if (password && password.trim().length > 0) {
+            const plan = user?.plan || 'FREE';
+            const allowedPlans = ['BASIC', 'PRO', 'ENTERPRISE', 'ADMIN', 'STANDARD', 'BUSINESS'];
+
+            if (user?.role !== 'ADMIN' && !allowedPlans.includes(plan)) {
+                return NextResponse.json({ error: 'Password protection requires Basic or Pro plan.' }, { status: 403 });
+            }
+
+            // Simple hash or Bcrypt
+            try {
+                const bcrypt = require('bcryptjs');
+                passwordHash = await bcrypt.hash(password, 10);
+            } catch (e) {
+                console.error('Bcrypt error:', e);
+                // Fallback probably not safe, but erroring is safer
+                return NextResponse.json({ error: 'Encryption failed' }, { status: 500 });
+            }
         }
 
         // Generate unique slug
@@ -53,7 +79,8 @@ export async function POST(request: NextRequest) {
                 description,
                 expiresAt: expiresAt ? new Date(expiresAt) : null,
                 maxViews: maxViews ? parseInt(maxViews) : null,
-                createdBy: session.user.id
+                createdBy: session.user.id,
+                password: passwordHash
             }
         });
 

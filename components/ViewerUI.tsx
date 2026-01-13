@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Settings, X, Palette, Sun, Eye, EyeOff, Share2, MessageSquare, Plus, Check, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -58,6 +58,8 @@ interface ViewerUIProps {
     pendingAnnotation: any; // THREE.Vector3 | null
     onCancelAnnotation: () => void;
     onSubmitAnnotation: (text: string) => void;
+    
+    ownerPlan?: string;
 }
 
 export default function ViewerUI({
@@ -93,7 +95,8 @@ export default function ViewerUI({
     onToggleAnnotationMode,
     pendingAnnotation,
     onCancelAnnotation,
-    onSubmitAnnotation
+    onSubmitAnnotation,
+    ownerPlan = 'FREE'
 }: ViewerUIProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isQRModalOpen, setIsQRModalOpen] = useState(false);
@@ -123,12 +126,35 @@ export default function ViewerUI({
         { label: 'Beige', value: '#f5f5f4' },
     ];
 
+    // Check if Pro Plan logic applies
+    // Note: Since we don't have customLogoUrl yet, we assume standard behavior unless URL is present.
+    // For now, we keep the Standard Logo. 
+    // BUT the requirement is: "If Custom Logo, Main=Custom, Sub(BottomLeft)=CaseView".
+    // I will simulate this structure:
+    const customLogoUrl = null; // Placeholder effectively. 
+    // In future: const customLogoUrl = ownerPlan === 'PRO' ? settings['custom_logo_url'] : null;
+
     return (
         <>
-            {/* Beta (Powered by Logo) Badge (Top Left) */}
-            <div className="absolute top-8 left-8 z-40 select-none scale-90 origin-top-left">
-                <Logo className="px-4 py-3 glass rounded-3xl border border-white/40 shadow-2xl shadow-blue-500/10" />
-            </div>
+            {/* Logo Logic */}
+            {customLogoUrl ? (
+                <>
+                    {/* Main Custom Logo (Top Left) */}
+                    <div className="absolute top-8 left-8 z-40 select-none origin-top-left">
+                        <img src={customLogoUrl} alt="Lab Logo" className="h-12 object-contain drop-shadow-lg" />
+                    </div>
+                    {/* Secondary CaseView Logo (Bottom Left) */}
+                    <div className="absolute bottom-6 left-6 z-40 select-none scale-75 origin-bottom-left opacity-80 hover:opacity-100 transition-opacity">
+                        <Logo className="px-3 py-2 glass rounded-2xl border border-white/20 shadow-lg" />
+                        <span className="text-[10px] text-gray-400 font-bold ml-2">Powered by CaseView3D</span>
+                    </div>
+                </>
+            ) : (
+                /* Standard CaseView Logo (Top Left) */
+                <div className="absolute top-8 left-8 z-40 select-none scale-90 origin-top-left">
+                    <Logo className="px-4 py-3 glass rounded-3xl border border-white/40 shadow-2xl shadow-blue-500/10" />
+                </div>
+            )}
 
             {/* Settings Button */}
             <button

@@ -6,27 +6,31 @@ export const PLAN_LIMITS = {
     FREE: {
         maxLinks: 1,
         linkDurationHours: 2,
-        label: 'Free'
+        label: 'Free',
+        features: { password: false, customLogo: false }
     },
     BASIC: {
         maxLinks: 5,
         linkDurationHours: 24, // 1일
-        label: 'Basic'
+        label: 'Basic',
+        features: { password: true, customLogo: false }
     },
     PRO: {
         maxLinks: 20,
         linkDurationHours: 72, // 3일
-        label: 'Pro'
+        label: 'Pro',
+        features: { password: true, customLogo: true }
     },
     ENTERPRISE: {
         maxLinks: 99999, // 무제한
         linkDurationHours: 87600, // 10년 (영구)
-        label: 'Enterprise'
+        label: 'Enterprise',
+        features: { password: true, customLogo: true }
     },
     // 기존 호환성 유지
-    STANDARD: { maxLinks: 10, linkDurationHours: 72, label: 'Standard (Deprecated)' },
-    BUSINESS: { maxLinks: 99999, linkDurationHours: 87600, label: 'Business (Deprecated)' },
-    ADMIN: { maxLinks: 99999, linkDurationHours: 87600, label: 'Admin' }
+    STANDARD: { maxLinks: 10, linkDurationHours: 72, label: 'Standard (Deprecated)', features: { password: true, customLogo: false } },
+    BUSINESS: { maxLinks: 99999, linkDurationHours: 87600, label: 'Business (Deprecated)', features: { password: true, customLogo: true } },
+    ADMIN: { maxLinks: 99999, linkDurationHours: 87600, label: 'Admin', features: { password: true, customLogo: true } }
 } as const;
 
 export async function canCreateLink(userId: string): Promise<{

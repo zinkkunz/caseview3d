@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Check, Globe, CreditCard, Lock, Crown, Building2 } from 'lucide-react';
 import { useState } from 'react';
@@ -30,10 +30,10 @@ const plans = [
         description: '프리랜서 및 소규모',
         icon: '⚡',
         features: [
+            'Free 플랜의 모든 기능 포함',
             '활성 링크: 5개',
             '유지 시간: 24시간',
-            '비밀번호 공유 (보안)',
-            '워터마크 제거'
+            '비밀번호 공유 (보안)'
         ],
         cta: '시작하기',
         popular: true,
@@ -47,6 +47,7 @@ const plans = [
         description: '전문 기공소용',
         icon: '👑',
         features: [
+            'Basic 플랜의 모든 기능 포함',
             '활성 링크: 20개',
             '유지 시간: 3일 (72시간)',
             '커스텀 로고 (브랜딩)',
@@ -64,6 +65,7 @@ const plans = [
         description: '대형 병원 및 체인',
         icon: '🏢',
         features: [
+            'Pro 플랜의 모든 기능 포함',
             '활성 링크: 무제한',
             '유지 시간: 영구 보관',
             'API 연동 지원',

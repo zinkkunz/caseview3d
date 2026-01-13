@@ -1,12 +1,14 @@
 ﻿'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Upload, Check, Copy, FileBox, Hexagon, LayoutDashboard, LogIn, Settings, ArrowRight, Mail, MessageCircle } from 'lucide-react';
+import { Upload, Check, Copy, FileBox, Hexagon, LayoutDashboard, LogIn, Settings, ArrowRight } from 'lucide-react';
 import ProgressBar from '@/components/ProgressBar';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import UpgradeModal from '@/components/UpgradeModal';
 import Logo from '@/components/Logo';
 import { ModeToggle } from '@/components/ModeToggle';
+import { ShareToast } from '@/components/ShareToast';
+import { ShareModal } from '@/components/ShareModal';
 
 export default function ClientPage({ settings }: { settings: Record<string, string> }) {
     const { data: session } = useSession();
@@ -14,19 +16,21 @@ export default function ClientPage({ settings }: { settings: Record<string, stri
     const [uploadProgress, setUploadProgress] = useState(0);
     const [statusMessage, setStatusMessage] = useState('');
     const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+    const [createdCaseId, setCreatedCaseId] = useState<string | null>(null);
     const [memo, setMemo] = useState('');
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [upgradeReason, setUpgradeReason] = useState<'MAX_LINKS_EXCEEDED' | 'LINK_EXPIRED'>('MAX_LINKS_EXCEEDED');
     
-    // File selection states for visual feedback
     const [scanFileCount, setScanFileCount] = useState(0);
     const [designFileCount, setDesignFileCount] = useState(0);
     
-    const [copied, setCopied] = useState(false);
+    // Toast & Modal State
+    const [showShareToast, setShowShareToast] = useState(false);
+    const [showSecureModal, setShowSecureModal] = useState(false);
     
     const formRef = useRef<HTMLFormElement>(null);
 
-        const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!formRef.current) return;
         const formData = new FormData(formRef.current);
@@ -50,7 +54,6 @@ export default function ClientPage({ settings }: { settings: Record<string, stri
             const totalCount = allFiles.length;
 
             const uploadFile = async (file: File, type: 'scan' | 'design') => {
-                // 1. Get Presigned URL
                 const presignRes = await fetch('/api/upload/presign', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -64,7 +67,6 @@ export default function ClientPage({ settings }: { settings: Record<string, stri
                 
                 const { url, key } = await presignRes.json();
                 
-                // 2. Upload to R2
                 const uploadRes = await fetch(url, {
                     method: 'PUT',
                     body: file,
@@ -86,7 +88,6 @@ export default function ClientPage({ settings }: { settings: Record<string, stri
 
             const results = await Promise.all([...scanPromises, ...designPromises]);
 
-            // 3. Finalize Case
             setStatusMessage('데이터 저장 중...');
             const createRes = await fetch('/api/cases/create', {
                 method: 'POST',
@@ -99,6 +100,7 @@ export default function ClientPage({ settings }: { settings: Record<string, stri
                 setUploadProgress(100);
                 setStatusMessage('완료!');
                 setGeneratedLink(window.location.origin + '/viewer/' + data.caseId);
+                setCreatedCaseId(data.caseId);
             } else {
                 const errData = await createRes.json();
                 if (createRes.status === 403) {
@@ -120,31 +122,17 @@ export default function ClientPage({ settings }: { settings: Record<string, stri
     const handleCopy = () => {
         if (!generatedLink) return;
         navigator.clipboard.writeText(generatedLink);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setShowShareToast(true);
+        // Timeout handling: only hide if secure modal is NOT open? 
+        // Actually, if secure modal opens, we explicitly hide toast.
+        // So simple timeout is fine, if user clicks Lock, we clear timeout implicitly by unmounting or state change?
+        // No, timeout callback runs. But if we set state false, it's fine.
+        setTimeout(() => setShowShareToast(false), 5000); 
     };
 
-    const handleShareKakao = () => {
-        if (!generatedLink) return;
-        const shareUrl = generatedLink;
-        if (navigator.share) {
-            navigator.share({
-                title: 'CaseView3D 공유',
-                text: '3D 구강 스캔 데이터를 확인해보세요.',
-                url: shareUrl,
-            }).catch(() => {
-                window.open(`https://sharer.kakao.com/talk/friends/picker/link?app_key=57cd0c6b3918941d7482715938cbab0a&link=${encodeURIComponent(shareUrl)}`);
-            });
-        } else {
-            window.open(`https://sharer.kakao.com/talk/friends/picker/link?app_key=57cd0c6b3918941d7482715938cbab0a&link=${encodeURIComponent(shareUrl)}`);
-        }
-    };
-
-    const handleShareEmail = () => {
-        if (!generatedLink) return;
-        const subject = encodeURIComponent('CaseView3D - 3D 데이터 케이스 공유');
-        const body = encodeURIComponent(`안녕하세요.\n\n요청하신 3D 데이터 케이스 링크를 보내드립니다.\n아래 링크를 통해 뷰어를 확인하실 수 있습니다.\n\n링크: ${generatedLink}\n\n감사합니다.`);
-        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    const handleOpenSecure = () => {
+        setShowShareToast(false); // Close Toast immediately
+        setShowSecureModal(true); // Open Modal
     };
 
     return (
@@ -249,41 +237,33 @@ export default function ClientPage({ settings }: { settings: Record<string, stri
 
                             <div className="bg-white/80 dark:bg-gray-800/80 p-4 rounded-xl border border-green-100 dark:border-green-900/50 text-xs font-bold text-gray-500 break-all relative group overflow-hidden">
                                 {generatedLink}
-                                {copied && (
-                                    <div className="absolute inset-0 bg-green-600/90 backdrop-blur-sm flex items-center justify-center text-white font-black animate-fade-in">
-                                        ✅ 복사 완료!
-                                    </div>
-                                )}
                             </div>
 
-                            <div className="grid grid-cols-1 gap-3">
-                                <button
-                                    onClick={handleCopy}
-                                    className="w-full py-4 bg-green-600 text-white font-black rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 dark:shadow-none flex items-center justify-center gap-2"
-                                >
-                                    <Copy size={18} />
-                                    <span>{copied ? '복사되었습니다' : '링크 복사하기'}</span>
-                                </button>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={handleShareKakao}
-                                        className="py-4 bg-[#FEE500] text-[#3c1e1e] font-black rounded-2xl hover:opacity-90 transition-all flex items-center justify-center gap-2 text-sm shadow-sm"
-                                    >
-                                        <MessageCircle size={18} fill="#3c1e1e" />
-                                        <span>카카오톡 전송</span>
-                                    </button>
-                                    <button
-                                        onClick={handleShareEmail}
-                                        className="py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black rounded-2xl hover:opacity-90 transition-all flex items-center justify-center gap-2 text-sm shadow-sm"
-                                    >
-                                        <Mail size={18} />
-                                        <span>메일 전송</span>
-                                    </button>
-                                </div>
-                            </div>
+                            <button
+                                onClick={handleCopy}
+                                className="w-full py-4 bg-green-600 text-white font-black rounded-2xl hover:bg-green-700 transition-all shadow-lg shadow-green-100 dark:shadow-none flex items-center justify-center gap-2"
+                            >
+                                <Copy size={18} />
+                                <span>링크 복사하기</span>
+                            </button>
                         </div>
                     )}
+                    
+                    {/* ShareToast Component */}
+                    {showShareToast && (
+                        <ShareToast 
+                            onClose={() => setShowShareToast(false)}
+                            onOpenSecure={handleOpenSecure}
+                        />
+                    )}
+                    
+                    {/* Secure Modal (Portal) */}
+                    <ShareModal 
+                        caseId={createdCaseId || ''}
+                        isOpen={showSecureModal}
+                        onClose={() => setShowSecureModal(false)}
+                        onLinkGenerated={(url) => setGeneratedLink(url)}
+                    />
                 </div>
             </main>
 

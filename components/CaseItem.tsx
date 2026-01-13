@@ -1,7 +1,8 @@
-'use client';
+﻿'use client';
 
 import Link from "next/link";
-import { Trash2, ExternalLink, CreditCard, Share2, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
+import { Trash2, ExternalLink, CreditCard, Share2, AlertCircle, Clock, CheckCircle2, Copy, Link as LinkIcon } from "lucide-react";
+import { ShareToast } from "@/components/ShareToast";
 import { ShareModal } from "@/components/ShareModal";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -40,6 +41,9 @@ export default function CaseItem({ c }: CaseItemProps) {
         className: '',
         isPermanent: false
     });
+    
+    const [showShareToast, setShowShareToast] = useState(false);
+    const [showSecureModal, setShowSecureModal] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -135,6 +139,11 @@ export default function CaseItem({ c }: CaseItemProps) {
         }
     };
 
+    const handleOpenSecure = () => {
+        setShowShareToast(false);
+        setShowSecureModal(true);
+    };
+
     if (!mounted) {
         return (
             <div className="block p-5 border-b">
@@ -193,8 +202,20 @@ export default function CaseItem({ c }: CaseItemProps) {
                         </div>
 
                         <div className="flex items-center justify-between w-full sm:w-auto gap-2">
-                            <div className="flex items-center gap-2">
-                                <ShareModal caseId={c.id} />
+                             <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => {
+                                        const url = window.location.origin + '/viewer/' + c.id;
+                                        navigator.clipboard.writeText(url);
+                                        setShowShareToast(true);
+                                        setTimeout(() => setShowShareToast(false), 5000);
+                                    }}
+                                    className="w-10 h-10 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-[#0061FF] border rounded-2xl hover:border-blue-50 hover:bg-white dark:hover:bg-gray-800 transition-all"
+                                    title="Copy Link"
+                                >
+                                    <LinkIcon size={20} />
+                                </button>
+                                
                                 <Link
                                     href={'/viewer/' + c.id}
                                     target="_blank"
@@ -226,6 +247,20 @@ export default function CaseItem({ c }: CaseItemProps) {
                     </div>
                 </div>
             </div>
+            
+            {showShareToast && (
+                <ShareToast 
+                    onClose={() => setShowShareToast(false)}
+                    onOpenSecure={handleOpenSecure}
+                />
+            )}
+            
+            {/* Secure Modal (Portal handled inside) */}
+            <ShareModal 
+                caseId={c.id}
+                isOpen={showSecureModal}
+                onClose={() => setShowSecureModal(false)}
+            />
         </div>
     );
 }

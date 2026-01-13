@@ -1,5 +1,7 @@
-﻿import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { notFound, redirect } from 'next/navigation';
+import { LinkLockScreen } from '@/components/LinkLockScreen';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +49,16 @@ export default async function SmartLinkPage({ params }: PageProps) {
             );
         }
 
+        // Password Protection Check
+        if (link.password) {
+            const cookieStore = await cookies();
+            const hasAuth = cookieStore.get(`link_unlock_${slug}`);
+
+            if (!hasAuth || hasAuth.value !== 'true') {
+                return <LinkLockScreen slug={slug} memo={link.description || link.Case?.memo || '3D Model'} />;
+            }
+        }
+
         // Increment View Count (Atomic)
         await prisma.link.update({
             where: { id: link.id },
@@ -59,7 +71,7 @@ export default async function SmartLinkPage({ params }: PageProps) {
     } catch (error: any) {
         // Handle redirect() throwing internally in Next.js
         if (error.message === 'NEXT_REDIRECT') throw error;
-        
+
         console.error("Smart Link Error:", error);
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-neutral-900 text-center p-4">

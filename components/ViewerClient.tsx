@@ -45,11 +45,13 @@ const DEFAULT_BG_COLOR = '#f5f5f4';
 export default function ViewerClient({
     id,
     settings,
-    isOwner = false
+    isOwner = false,
+    ownerPlan = 'FREE'
 }: {
     id: string;
     settings: Record<string, string>;
     isOwner?: boolean;
+    ownerPlan?: string;
 }) {
     const [caseData, setCaseData] = useState<CaseData | null>(null);
     const [loadingData, setLoadingData] = useState(true);
@@ -297,7 +299,7 @@ export default function ViewerClient({
                 onSubmitAnnotation={handleAddAnnotation}
                 hasPLY={fileList.some(f => f.path.toLowerCase().endsWith(".ply"))}
                 caseId={id}
-                
+                ownerPlan={ownerPlan}
             />
             
             {!error && (!modelsReady || loadingData) && (
@@ -331,6 +333,3 @@ export default function ViewerClient({
         </main>
     );
 }
-
-
-

@@ -1,161 +1,135 @@
 ﻿'use client';
 
-import { useState } from 'react';
-import { Copy, Link as LinkIcon, Eye, Calendar, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Check, X, Lock } from 'lucide-react';
 
 interface ShareModalProps {
     caseId: string;
+    isOpen: boolean;            // Controlled
+    onClose: () => void;        // Controlled
+    onLinkGenerated?: (url: string) => void;
 }
 
-export function ShareModal({ caseId }: ShareModalProps) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+export function ShareModal({ caseId, isOpen, onClose, onLinkGenerated }: ShareModalProps) {
     const [isLoading, setIsLoading] = useState(false);
-    
-    // Options
-    const [expiresAt, setExpiresAt] = useState<string>('7d'); // 1d, 7d, 30d, inf
-    const [maxViews, setMaxViews] = useState<string>('100'); // 10, 50, 100, inf
+    const [password, setPassword] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
     const generateLink = async () => {
-        console.log('[ShareModal] Generating link for Case ID:', caseId);
         setIsLoading(true);
         try {
-            // Calculate actual date based on selection
-            let dateValue: Date | null = new Date();
-            if (expiresAt === '1d') dateValue.setDate(dateValue.getDate() + 1);
-            else if (expiresAt === '7d') dateValue.setDate(dateValue.getDate() + 7);
-            else if (expiresAt === '30d') dateValue.setDate(dateValue.getDate() + 30);
-            else dateValue = null;
-
             const res = await fetch('/api/links', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     caseId,
-                    expiresAt: dateValue?.toISOString(),
-                    maxViews: maxViews === 'inf' ? null : maxViews
+                    expiresAt: null, 
+                    maxViews: null,
+                    password: password || null
                 })
             });
+
+            if (!res.ok) {
+                 const err = await res.json();
+                 alert(err.error || 'Failed to create link');
+                 return;
+            }
+
             const data = await res.json();
             if (data.success) {
-                setGeneratedLink(data.url);
+                // Auto-Copy the new link
+                try {
+                    await navigator.clipboard.writeText(data.url);
+                    alert('보안 링크가 설정되고 클립보드에 복사되었습니다!');
+                } catch (err) {
+                    // Fallback if clipboard fails (unlikely in user interaction)
+                    alert('보안 링크가 설정되었습니다.');
+                }
+                
+                if (onLinkGenerated) onLinkGenerated(data.url);
+                onClose();
+            } else {
+                alert('링크 생성 실패');
             }
-        } catch (e) {
-            console.error(e);
+
+        } catch (error) {
+            console.error(error);
+            alert('오류가 발생했습니다.');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const copyToClipboard = () => {
-        if (generatedLink) {
-            navigator.clipboard.writeText(generatedLink);
-            alert('Link copied!');
-        }
-    };
+    if (!mounted || !isOpen) return null;
 
-    if (!isOpen) {
-        return (
-            <button 
-                onClick={() => setIsOpen(true)}
-                className="w-12 h-12 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-[#0061FF] dark:hover:text-blue-400 rounded-2xl hover:bg-white dark:hover:bg-gray-800 hover:shadow-md transition-all border border-transparent hover:border-blue-50"
-                title="Secure Share"
-            >
-                <LinkIcon size={22} />
-            </button>
-        );
-    }
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-            <div className="w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-2xl overflow-hidden relative animate-in fade-in zoom-in duration-200">
-                
+    // Use Portal to break out of any parent stacking contexts (like Toasts)
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            {/* Click outside to close */}
+            <div className="absolute inset-0" onClick={onClose} />
+            
+            <div className="w-full max-w-sm bg-white dark:bg-neutral-900 rounded-2xl border border-gray-100 dark:border-neutral-800 shadow-2xl overflow-hidden relative scale-100 z-10 transition-all">
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800 flex justify-between items-center">
-                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">Secure Link Generation</h3>
-                    <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-neutral-800 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                    <h3 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
+                        <Lock size={16} className="text-blue-600" />
+                        보안 링크 설정 (Secure Link)
+                    </h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                         <X size={20} />
                     </button>
                 </div>
 
                 <div className="p-6 space-y-6">
-                    {!generatedLink ? (
-                        <>
-                            <div className="space-y-3">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                    <Calendar className="w-4 h-4 text-blue-500" />
-                                    Expiration
-                                </label>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {['1d', '7d', '30d', 'inf'].map(opt => (
-                                        <button
-                                            key={opt}
-                                            onClick={() => setExpiresAt(opt)}
-                                            className={`px-3 py-2 text-xs font-bold rounded-lg transition-all border ${
-                                                expiresAt === opt 
-                                                ? 'bg-blue-600 text-white border-blue-600' 
-                                                : 'bg-gray-50 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 border-transparent hover:border-gray-300'
-                                            }`}
-                                        >
-                                            {opt === 'inf' ? '' : opt.toUpperCase()}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="space-y-3">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                    <Eye className="w-4 h-4 text-green-500" />
-                                    Max Views
-                                </label>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {['10', '50', '100', 'inf'].map(opt => (
-                                        <button
-                                            key={opt}
-                                            onClick={() => setMaxViews(opt)}
-                                            className={`px-3 py-2 text-xs font-bold rounded-lg transition-all border ${
-                                                maxViews === opt 
-                                                ? 'bg-green-600 text-white border-green-600' 
-                                                : 'bg-gray-50 dark:bg-neutral-800 text-gray-600 dark:text-gray-400 border-transparent hover:border-gray-300'
-                                            }`}
-                                        >
-                                            {opt === 'inf' ? '' : opt}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <button 
-                                onClick={generateLink}
-                                disabled={isLoading}
-                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {isLoading ? 'Generating...' : 'Create Secure Link'}
-                            </button>
-                        </>
-                    ) : (
-                        <div className="space-y-4 animate-in slide-in-from-bottom-2 duration-300">
-                             <div className="p-4 bg-gray-50 dark:bg-neutral-950 rounded-xl border border-gray-100 dark:border-neutral-800 text-center space-y-2">
-                                <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">Your Secure Link</div>
-                                <div className="font-mono text-blue-500 break-all select-all text-sm">{generatedLink}</div>
-                            </div>
-                            <button 
-                                onClick={copyToClipboard}
-                                className="w-full py-3 bg-gray-900 dark:bg-white text-white dark:text-black font-bold rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                            >
-                                <Copy size={16} />
-                                Copy Link
-                            </button>
-                            <button 
-                                onClick={() => setGeneratedLink(null)}
-                                className="w-full py-2 text-xs font-bold text-gray-400 hover:text-gray-600"
-                            >
-                                Generate New Link
-                            </button>
+                    <div className="space-y-4">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
+                            비밀번호를 설정하여 데이터를 안전하게 보호하세요.<br/>
+                            <span className="text-xs text-gray-400">(설정하지 않으면 누구나 볼 수 있습니다)</span>
                         </div>
-                    )}
+                        
+                        <div className="space-y-2">
+                            <label className="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest ml-1">
+                                Password
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="비밀번호 입력 (선택)"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:font-normal"
+                                    autoFocus
+                                />
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                    <Lock size={14} className="text-gray-400" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={generateLink}
+                        disabled={isLoading}
+                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-100 dark:shadow-none"
+                    >
+                        {isLoading ? (
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                            <>
+                                <Check size={18} strokeWidth={3} />
+                                <span>설정 저장 및 링크 생성</span>
+                            </>
+                        )}
+                    </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
