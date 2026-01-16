@@ -1,4 +1,4 @@
-﻿import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import type { Plan } from './types';
 
 // 요금제별 제한 값
@@ -46,8 +46,8 @@ export async function canCreateLink(userId: string): Promise<{
     });
     if (!user) return { allowed: false, reason: 'PLAN_EXPIRED' };
 
-    // ADMIN 역할은 무조건 허용
-    if (user.role === 'ADMIN') {
+    // ADMIN 역할은 무조건 허용 (대소문자 구분 없음)
+    if (user.role?.toUpperCase() === 'ADMIN') {
         return { allowed: true };
     }
 
@@ -55,7 +55,9 @@ export async function canCreateLink(userId: string): Promise<{
 
     // 만료 체크 (무료/Enterprise/Admin 플랜은 만료 없음)
     // FIX: ADMIN 플랜도 만료 체크에서 제외
-    if (plan !== 'FREE' && plan !== 'ENTERPRISE' && plan !== 'ADMIN' && user.planEndDate && new Date() > user.planEndDate) {
+    const upperPlan = plan.toUpperCase();
+    if (upperPlan !== 'FREE' && upperPlan !== 'ENTERPRISE' && upperPlan !== 'ADMIN' && user.planEndDate && new Date() > user.planEndDate) {
+        console.log(`[LinkCheck] Plan Expired: User=${userId}, Plan=${plan}, EndDate=${user.planEndDate}`);
         return { allowed: false, reason: 'PLAN_EXPIRED' };
     }
 
@@ -64,6 +66,7 @@ export async function canCreateLink(userId: string): Promise<{
     const maxLinks = PLAN_LIMITS[plan]?.maxLinks ?? 1;
 
     if (activeLinkCount >= maxLinks) {
+        console.log(`[LinkCheck] Max Links Exceeded: User=${userId}, Count=${activeLinkCount}, Max=${maxLinks}`);
         return { allowed: false, reason: 'MAX_LINKS_EXCEEDED', currentCount: activeLinkCount, maxLinks };
     }
     return { allowed: true };
