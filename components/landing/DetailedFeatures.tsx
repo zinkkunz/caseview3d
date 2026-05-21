@@ -4,27 +4,11 @@ import { Layers, Zap, ShieldCheck } from 'lucide-react';
 
 const detailedFeatures = [
     {
-        title: '강력한 3D 뷰어 엔진',
-        subtitle: '웹 표준 기술의 정점',
-        description: '별도의 프로그램 설치 없이 웹 브라우저만으로 고해상도 STL 데이터를 실시간으로 렌더링합니다. 줌, 회전, 투명도 조절 기능을 통해 정밀한 디자인 검토가 가능합니다.',
-        icon: Layers,
-        color: 'bg-[#0061FF]',
-        image: '/images/landing/viewer_mockup.png'
-    },
-    {
-        title: '즉각적인 공유 시스템',
-        subtitle: '전화 한 통 줄이는 마법',
-        description: '디자인 파일을 올리자마자 생성되는 고유 링크를 치과에 전달하세요. 치과의사는 모바일 카카오톡이나 문자에서도 즉석에서 확인하고 컨펌할 수 있습니다.',
-        icon: Zap,
-        color: 'bg-[#0052D9]',
-        image: '/images/landing/dashboard_mockup.png'
-    },
-    {
-        title: '자동 데이터 보존 정책',
+        title: '자동 데이터 보존 및 보안 정책',
         subtitle: '보안은 기본, 공간은 효율적으로',
-        description: '일정 기간이 지나면 공유된 데이터가 자동으로 삭제되어 보안 사고를 예방하고 스토리지 공간을 효율적으로 관리할 수 있습니다. 비밀번호 설정으로 보안을 강화하세요.',
+        description: '일정 기간이 지나면 공유된 3D 스캔 및 디자인 데이터가 클라우드에서 자동으로 영구 삭제되어 중요 환자 정보의 보안 사고를 차단하고 스토리지 공간을 효율적으로 관리할 수 있습니다. 추가적인 비밀번호 설정을 통해 강력한 보안 제어가 가능합니다.',
         icon: ShieldCheck,
-        color: 'bg-[#3A85FF]',
+        color: 'bg-[#0061FF]',
         image: '/images/landing/mobile_secure_mockup.png'
     }
 ];
@@ -32,9 +16,9 @@ const detailedFeatures = [
 export default function DetailedFeatures() {
     return (
         <section className="py-24 bg-white dark:bg-black transition-colors duration-300" id="features">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-32">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {detailedFeatures.map((feature, index) => (
-                    <div key={index} className={`flex flex-col ${index % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-16 lg:gap-24`}>
+                    <div key={index} className="flex flex-col md:flex-row items-center gap-16 lg:gap-24">
                         <div className="flex-1 space-y-8">
                             <div className={`${feature.color} w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200 dark:shadow-none`}>
                                 <feature.icon size={32} />
