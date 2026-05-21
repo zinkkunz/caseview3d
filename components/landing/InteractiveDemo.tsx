@@ -4,15 +4,14 @@ import { Canvas, useLoader, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import * as THREE from 'three';
-import React, { useState, useRef, Suspense, useEffect, useMemo } from 'react';
-import { Ruler, RotateCcw, HelpCircle, Eye } from 'lucide-react';
+import React, { useState, useRef, Suspense, useEffect } from 'react';
+import { Eye, EyeOff, HelpCircle } from 'lucide-react';
 
 // --- 3D 뷰어 자체 샌드박싱용 에러 경계 컴포넌트 ---
 interface ErrorBoundaryProps {
     children: React.ReactNode;
     fallback: (error: Error) => React.ReactNode;
 }
-
 interface ErrorBoundaryState {
     hasError: boolean;
     error: Error | null;
@@ -23,15 +22,12 @@ class ThreeErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBounda
         super(props);
         this.state = { hasError: false, error: null };
     }
-
     static getDerivedStateFromError(error: Error) {
         return { hasError: true, error };
     }
-
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-        console.error("[3D Viewer ErrorBoundary] Caught an error during R3F rendering:", error, errorInfo);
+        console.error("[3D Demo ErrorBoundary]", error, errorInfo);
     }
-
     render() {
         if (this.state.hasError && this.state.error) {
             return this.props.fallback(this.state.error);
@@ -40,19 +36,17 @@ class ThreeErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBounda
     }
 }
 
-interface LayoutState {
-    modelScale: number;
-    centerOffset: THREE.Vector3;
-}
+// --- 색상 기본값 (실제 뷰어 ViewerClient.tsx와 동기화) ---
+const DEFAULT_SCAN_COLOR = '#C8B06A';   // 덴탈 골드 베이지 (상/하악 스캔)
+const DEFAULT_DESIGN_COLOR = '#DCDCDC'; // 라이트 그레이 (보철/크라운)
 
-// --- 카메라 추적 3포인트 조명 (Scene.tsx의 ThreePointLighting과 동일한 아키텍처) ---
-// group의 position/quaternion을 카메라에 실시간 동기화하여 어떤 각도에서도 형태 경계가 선명하게 유지됩니다.
-function DemoThreePointLighting() {
+// --- 카메라 추적 3포인트 조명 (Scene.tsx ThreePointLighting과 완전 동일) ---
+// GC Zero: position.copy / quaternion.copy는 new THREE.Vector3() 할당이 없으므로 GC 부하 0건 보증
+function DemoThreePointLighting({ brightness = 1 }: { brightness?: number }) {
     const groupRef = useRef<THREE.Group>(null);
 
     useFrame(({ camera }) => {
         if (groupRef.current) {
-            // position/quaternion copy는 new THREE.Vector3() 할당이 없으므로 GC Zero 보증
             groupRef.current.position.copy(camera.position);
             groupRef.current.quaternion.copy(camera.quaternion);
         }
@@ -60,36 +54,49 @@ function DemoThreePointLighting() {
 
     return (
         <group ref={groupRef}>
-            <directionalLight position={[10, 10, 10]} intensity={1.0} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.0005} />
-            <directionalLight position={[-10, 0, 10]} intensity={0.5} />
-            <directionalLight position={[0, 10, -10]} intensity={0.5} />
+            <directionalLight position={[10, 10, 10]} intensity={1.0 * brightness} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.0005} />
+            <directionalLight position={[-10, 0, 10]} intensity={0.5 * brightness} />
+            <directionalLight position={[0, 10, -10]} intensity={0.5 * brightness} />
         </group>
     );
 }
 
-// 3D 치아 스캔 모델을 렌더링하는 내부 컴포넌트
-function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (point: THREE.Vector3) => void }) {
+interface ModelConfig {
+    url: string;
+    color: string;
+    type: 'maxilla' | 'mandible' | 'design';
+    positionOffset: [number, number, number];
+    scaleMultiplier: number;
+}
+
+interface LayoutState {
+    modelScale: number;
+    centerOffset: THREE.Vector3;
+}
+
+// --- 개별 3D 모델 렌더링 컴포넌트 ---
+// [State Lock + dispose={null} + GC Zero] 런타임 안정성 100% 보존
+function DemoModel({
+    url,
+    color,
+    type,
+    opacity,
+    positionOffset,
+    scaleMultiplier,
+}: ModelConfig & { opacity: number }) {
     const geometry = useLoader(STLLoader, url);
-    
-    // [State Lock 아키텍처 - 영구 상태 잠금 및 방어적 기하 계산]
-    // useMemo를 전면 폐기하고, useState 지연 초기화(Lazy Initialization)를 통해 컴포넌트 최초 마운트 시 단 1회만 기하학적 형상을 해석하여 상태값에 잠급니다.
+
+    // [State Lock] 최초 마운트 시 단 1회만 기하 계산, 이후 리렌더링에서 재연산 없음
     const [layout] = useState<LayoutState>(() => {
-        // 노멀 연산 명시 (입체 명암 생성 보증)
         if (!geometry.attributes.normal) {
             geometry.computeVertexNormals();
         }
-
-        // 이미 바운딩 박스가 계산되어 있다면 중복 연산 배제하여 경합 방어
         if (!geometry.boundingBox) {
             geometry.computeBoundingBox();
         }
-        const boundingBox = geometry.boundingBox;
         const center = new THREE.Vector3();
-        if (boundingBox) {
-            boundingBox.getCenter(center);
-        }
+        geometry.boundingBox?.getCenter(center);
 
-        // 이미 바운딩 스피어가 계산되어 있다면 중복 연산 배제
         if (!geometry.boundingSphere) {
             geometry.computeBoundingSphere();
         }
@@ -97,148 +104,112 @@ function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (po
         let scale = 1;
         if (sphere && sphere.radius > 0) {
             const targetRadius = 2.8;
-            scale = targetRadius / sphere.radius;
+            scale = (targetRadius / sphere.radius) * scaleMultiplier;
         }
-
-        console.log("[3D DemoModel State Lock Active Log]");
-        console.log(" - Loaded scan vertices count:", geometry.attributes.position?.count);
-        console.log(" - BoundingBox calculated center:", center);
-        console.log(" - BoundingSphere calculated radius:", sphere?.radius);
-        console.log(" - Derived Scale Factor (State Locked):", scale);
 
         return {
             modelScale: scale,
-            centerOffset: center.clone().multiplyScalar(-1) // 원래 geometry 바운딩 박스 보존을 위해 클론 후 연산
+            centerOffset: center.clone().multiplyScalar(-1),
         };
     });
 
+    const isDesign = type === 'design';
+    const materialProps = {
+        color,
+        metalness: 0.0,
+        roughness: isDesign ? 0.5 : 0.6,
+        specularIntensity: isDesign ? 0.4 : 0.3,
+        clearcoat: isDesign ? 0.1 : 0.0,
+        clearcoatRoughness: isDesign ? 0.2 : 0.0,
+        envMapIntensity: isDesign ? 0.5 : 0.4,
+        transparent: opacity < 1,
+        opacity,
+        side: THREE.DoubleSide,
+    };
+
     return (
-        // [수학적/기하학적 샌드박싱]
-        // mesh 내부의 position 이동(centerOffset)과 group의 scale 연산을 이중 레이어로 완벽 격리!
-        // 영구적으로 고정 잠금된 layout 상태값을 원시 수치 배열 형태로 주입하여 Three.js 트랜스폼 행렬 오차 누적을 원천 격리합니다.
-        <group scale={[layout.modelScale, layout.modelScale, layout.modelScale]}>
-            <mesh 
-                geometry={geometry} 
-                dispose={null} // [R3F 캐시 보호] 컴포넌트 마운트 해제 시 geometry가 dispose()되어 캐시 붕괴 및 모델이 증발하는 현상 영구 예방
-                // 원시 값 배열 [x, y, z] 형태로 직접 바인딩하여 리렌더링 시 R3F 인스턴스 오버라이트 차단
-                position={[layout.centerOffset.x, layout.centerOffset.y, layout.centerOffset.z]} 
-                castShadow 
+        <group
+            scale={[layout.modelScale, layout.modelScale, layout.modelScale]}
+            position={positionOffset}
+        >
+            <mesh
+                geometry={geometry}
+                dispose={null} // [R3F 캐시 보호] geometry dispose() 자동 실행 영구 차단
+                position={[layout.centerOffset.x, layout.centerOffset.y, layout.centerOffset.z]}
+                castShadow
                 receiveShadow
-                onClick={(e) => {
-                    e.stopPropagation();
-                    // Raycast 교차 좌표 전달 (월드 좌표계 그대로 전달)
-                    if (e.point) {
-                        onPointSelected(e.point.clone());
-                    }
-                }}
             >
-                {/* 실제 케이스 뷰어(Model.tsx)와 동일한 PBR 덴탈 베이지 스캔 재질 적용 */}
-                <meshPhysicalMaterial 
-                    color="#E6C9A8"       // 덴탈 베이지 (실제 뷰어 기본색과 동일)
-                    metalness={0.0}
-                    roughness={0.6}       // 스캔 모델 특유의 반무광 질감
-                    specularIntensity={0.3}
-                    clearcoat={0.0}
-                    clearcoatRoughness={0.0}
-                    envMapIntensity={0.4}
-                    side={THREE.DoubleSide}
-                />
+                {/* PBR 재질: 실제 케이스 뷰어(Model.tsx)와 동일한 MeshPhysicalMaterial */}
+                <meshPhysicalMaterial {...materialProps} />
             </mesh>
         </group>
     );
 }
 
-// 핀 및 측정 선을 렌더링하는 컴포넌트
-function MeasurementOverlay({ points }: { points: THREE.Vector3[] }) {
-    return (
-        <>
-            {points.map((pt, idx) => (
-                <mesh key={idx} position={pt}>
-                    <sphereGeometry args={[0.08, 16, 16]} />
-                    <meshBasicMaterial color="#0061FF" depthTest={false} />
-                    <Html distanceFactor={5} position={[0, 0.15, 0]} center>
-                        <div className="bg-[#0061FF] text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-lg uppercase tracking-wider select-none whitespace-nowrap">
-                            Pin {idx + 1}
-                        </div>
-                    </Html>
-                </mesh>
-            ))}
-            {points.length === 2 && (
-                <LineBetweenPoints start={points[0]} end={points[1]} />
-            )}
-        </>
-    );
-}
+// --- 데모에 사용할 3개 모델 설정 ---
+const DEMO_MODELS: ModelConfig[] = [
+    {
+        url: '/samples/demo-maxilla.stl',
+        color: DEFAULT_SCAN_COLOR,
+        type: 'maxilla',
+        positionOffset: [0, 0.3, 0],   // 상악: 살짝 위
+        scaleMultiplier: 1.0,
+    },
+    {
+        url: '/samples/demo-mandible.stl',
+        color: DEFAULT_SCAN_COLOR,
+        type: 'mandible',
+        positionOffset: [0, -0.3, 0],  // 하악: 살짝 아래
+        scaleMultiplier: 1.0,
+    },
+    {
+        url: '/samples/demo-design.stl',
+        color: DEFAULT_DESIGN_COLOR,
+        type: 'design',
+        positionOffset: [0.2, 0, 0.1], // 디자인: 살짝 앞으로
+        scaleMultiplier: 0.35,          // 크라운 크기로 축소
+    },
+];
 
-// 두 핀 사이에 거리를 그리는 컴포넌트
-function LineBetweenPoints({ start, end }: { start: THREE.Vector3; end: THREE.Vector3 }) {
-    const pointsRef = useRef<THREE.BufferGeometry>(null);
-
-    useEffect(() => {
-        if (pointsRef.current) {
-            pointsRef.current.setFromPoints([start, end]);
-        }
-    }, [start, end]);
-
-    const distance = start.distanceTo(end) * 10; // 스케일 대조 실무 mm 환산 (보통 stl 1단위 = 1mm)
-    const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-
-    return (
-        <>
-            <line>
-                <bufferGeometry ref={pointsRef} />
-                <lineBasicMaterial color="#0061FF" linewidth={2.5} depthTest={false} />
-            </line>
-            <Html position={midPoint} center distanceFactor={6}>
-                <div className="bg-white dark:bg-gray-900 border border-blue-100 dark:border-gray-800 shadow-xl px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 select-none animate-bounce">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping"></span>
-                    <span className="text-gray-900 dark:text-gray-100 text-xs font-black tracking-tight whitespace-nowrap">
-                        {distance.toFixed(2)} mm
-                    </span>
-                </div>
-            </Html>
-        </>
-    );
-}
+const MODEL_LABELS: Record<string, string> = {
+    maxilla: '상악',
+    mandible: '하악',
+    design: '디자인',
+};
 
 export default function InteractiveDemo() {
     const [mounted, setMounted] = useState(false);
-    const [isRulerActive, setIsRulerActive] = useState(false);
-    const [points, setPoints] = useState<THREE.Vector3[]>([]);
-    const [isHovered, setIsHovered] = useState(false);
+    const [opacities, setOpacities] = useState<Record<string, number>>({
+        maxilla: 1.0,
+        mandible: 1.0,
+        design: 1.0,
+    });
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    // 핀 꽂기 로직 (최대 2개)
-    const handlePointSelected = (point: THREE.Vector3) => {
-        if (!isRulerActive) return;
-        
-        setPoints((prev) => {
-            if (prev.length >= 2) {
-                return [point]; // 3번째 클릭 시 리셋 후 첫 핀으로 설정
-            }
-            return [...prev, point];
-        });
+    const handleToggleVisibility = (type: string) => {
+        setOpacities(prev => ({
+            ...prev,
+            [type]: prev[type] > 0 ? 0 : 1.0,
+        }));
     };
 
-    const resetMeasurement = () => {
-        setPoints([]);
+    const handleOpacityChange = (type: string, value: number) => {
+        setOpacities(prev => ({ ...prev, [type]: value }));
     };
 
     const renderErrorFallback = (error: Error) => (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-red-50/20 dark:bg-red-950/10 text-center transition-all">
-            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mb-3 animate-bounce">
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-red-50/20 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-3">
                 <HelpCircle size={24} />
             </div>
-            <h3 className="text-sm font-black text-gray-900 dark:text-white mb-1.5">
-                3D 기공 데모 엔진 로딩 불가
-            </h3>
-            <p className="text-[11px] text-red-600 dark:text-red-400 max-w-sm font-semibold mb-4 bg-white dark:bg-gray-900 border border-red-100 dark:border-red-900/30 px-3 py-2 rounded-xl break-all">
-                {error.message || "3D 모델 리소스를 가져오거나 WebGL 컨텍스트를 초기화할 수 없습니다."}
+            <h3 className="text-sm font-black text-gray-900 mb-1.5">3D 기공 데모 엔진 로딩 불가</h3>
+            <p className="text-[11px] text-red-600 max-w-sm font-semibold mb-4 bg-white border border-red-100 px-3 py-2 rounded-xl break-all">
+                {error.message || "WebGL 컨텍스트를 초기화할 수 없습니다."}
             </p>
-            <button 
+            <button
                 onClick={() => window.location.reload()}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-md transition-all active:scale-95"
             >
@@ -247,9 +218,16 @@ export default function InteractiveDemo() {
         </div>
     );
 
+    const loadingFallback = (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+            <span className="w-8 h-8 rounded-full border-2 border-dashed border-blue-600 animate-spin" />
+            <span className="text-xs text-gray-400 font-bold uppercase tracking-widest animate-pulse">Loading 3D Engine...</span>
+        </div>
+    );
+
     if (!mounted) {
         return (
-            <section 
+            <section
                 id="interactive-demo"
                 className="py-16 bg-gray-50/50 dark:bg-black/30 border-y border-gray-100/50 dark:border-gray-800/50 transition-all"
             >
@@ -262,13 +240,12 @@ export default function InteractiveDemo() {
                             로그인 없이 즉시 체험하는 3D 뷰어
                         </h2>
                         <p className="mt-3 text-sm md:text-base text-gray-500 max-w-xl mx-auto font-light leading-relaxed">
-                            화면 속 잇몸 스캔 데이터를 직접 돌려보고 측정해 보세요.<br />
-                            당사의 압도적인 웹 3D 렌더링 퍼포먼스를 즉각 체감할 수 있습니다.
+                            상악·하악 스캔과 치아 디자인 파일을 동시에 확인하세요.<br />
+                            실제 기공 워크플로우 그대로 체험할 수 있습니다.
                         </p>
                     </div>
-
                     <div className="max-w-5xl mx-auto h-[450px] md:h-[600px] w-full bg-white dark:bg-[#0A0A0A] rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,97,255,0.06)] border border-gray-100 dark:border-gray-800 flex flex-col items-center justify-center gap-3">
-                        <span className="w-8 h-8 rounded-full border-2 border-dashed border-blue-600 animate-spin"></span>
+                        <span className="w-8 h-8 rounded-full border-2 border-dashed border-blue-600 animate-spin" />
                         <span className="text-xs text-gray-400 font-bold uppercase tracking-widest animate-pulse">Loading 3D Engine...</span>
                     </div>
                 </div>
@@ -277,7 +254,7 @@ export default function InteractiveDemo() {
     }
 
     return (
-        <section 
+        <section
             id="interactive-demo"
             className="py-16 bg-gray-50/50 dark:bg-black/30 border-y border-gray-100/50 dark:border-gray-800/50 transition-all"
         >
@@ -290,41 +267,42 @@ export default function InteractiveDemo() {
                         로그인 없이 즉시 체험하는 3D 뷰어
                     </h2>
                     <p className="mt-3 text-sm md:text-base text-gray-500 max-w-xl mx-auto font-light leading-relaxed">
-                        화면 속 잇몸 스캔 데이터를 직접 돌려보고 측정해 보세요.<br />
-                        당사의 압도적인 웹 3D 렌더링 퍼포먼스를 즉각 체감할 수 있습니다.
+                        상악·하악 스캔과 치아 디자인 파일을 동시에 확인하세요.<br />
+                        실제 기공 워크플로우 그대로 체험할 수 있습니다.
                     </p>
                 </div>
 
-                {/* 3D 뷰어 데모 컨테이너 */}
-                <div className="max-w-5xl mx-auto h-[450px] md:h-[600px] w-full bg-white dark:bg-[#0A0A0A] rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,97,255,0.06)] border border-gray-100 dark:border-gray-800 relative overflow-hidden group">
+                {/* 3D 뷰어 컨테이너 */}
+                <div className="max-w-5xl mx-auto h-[450px] md:h-[600px] w-full bg-white dark:bg-[#0A0A0A] rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,97,255,0.06)] border border-gray-100 dark:border-gray-800 relative overflow-hidden">
                     <ThreeErrorBoundary fallback={renderErrorFallback}>
-                        <Suspense fallback={
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                                <span className="w-8 h-8 rounded-full border-2 border-dashed border-blue-600 animate-spin"></span>
-                                <span className="text-xs text-gray-400 font-bold uppercase tracking-widest animate-pulse">Loading 3D Engine...</span>
-                            </div>
-                        }>
-                            {/* camera 설정을 Canvas의 속성으로 초기 영구 고정하여 OrbitControls 시점 뒤틀림 원천 제어 */}
-                            <Canvas 
+                        <Suspense fallback={loadingFallback}>
+                            {/* 실제 케이스 뷰어(Scene.tsx)와 동일한 Canvas 설정 */}
+                            <Canvas
                                 shadows
-                                gl={{ antialias: true }} 
-                                camera={{ position: [0, 3.5, 4.5], fov: 45 }}
-                                onPointerOver={() => setIsHovered(true)}
-                                onPointerOut={() => setIsHovered(false)}
+                                dpr={[1, 2]}
+                                camera={{ position: [0, 0, 8], fov: 45 }}
+                                gl={{ antialias: true, localClippingEnabled: true }}
+                                onCreated={({ gl }) => {
+                                    gl.setClearColor(0xf5f5f4, 1);
+                                }}
                                 className="w-full h-full cursor-grab active:cursor-grabbing"
                             >
-                                <color attach="background" args={['#f8fafc']} />
-                                
-                                {/* 실제 케이스 뷰어(Scene.tsx)와 동일한 카메라 추적 3포인트 조명 시스템 */}
+                                {/* 실제 케이스 뷰어(Scene.tsx)와 동일한 조명 구조 */}
                                 <ambientLight intensity={0.2} />
-                                <DemoThreePointLighting />
-                                
-                                <DemoModel url="/samples/demo-scan.stl" onPointSelected={handlePointSelected} />
-                                <MeasurementOverlay points={points} />
-                                
-                                <OrbitControls 
+                                <DemoThreePointLighting brightness={1} />
+
+                                {/* 3개 모델 동시 렌더링 */}
+                                {DEMO_MODELS.map((model) => (
+                                    <DemoModel
+                                        key={model.type}
+                                        {...model}
+                                        opacity={opacities[model.type]}
+                                    />
+                                ))}
+
+                                <OrbitControls
                                     rotateSpeed={1.0}
-                                    maxDistance={15}
+                                    maxDistance={30}
                                     minDistance={2}
                                     makeDefault
                                 />
@@ -332,51 +310,69 @@ export default function InteractiveDemo() {
                         </Suspense>
                     </ThreeErrorBoundary>
 
-                    {/* 오버레이 가이드 및 조작 패널 */}
-                    <div className="absolute top-4 left-4 z-30 pointer-events-none flex flex-col gap-2">
-                        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-100/50 dark:border-gray-800/50 shadow-md px-3.5 py-2.5 rounded-2xl max-w-[200px] sm:max-w-xs transition-opacity duration-300">
+                    {/* 가이드 오버레이 (좌상단) */}
+                    <div className="absolute top-4 left-4 z-30 pointer-events-none">
+                        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-100/50 dark:border-gray-800/50 shadow-md px-3.5 py-2.5 rounded-2xl max-w-[200px] sm:max-w-xs">
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
                                 <HelpCircle size={12} className="text-blue-500" /> Control Guide
                             </p>
                             <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
-                                {isRulerActive 
-                                    ? "치아 모델 표면을 2곳 클릭하면 두 점 사이의 거리가 mm 단위로 계산됩니다."
-                                    : "마우스나 손가락 드래그로 회전하고 휠로 확대/축소해 보세요."
-                                }
+                                드래그로 회전, 휠로 확대/축소하세요.
                             </p>
                         </div>
                     </div>
 
-                    {/* 조작 액션 툴바 */}
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-100/50 dark:border-gray-800/50 shadow-[0_16px_32px_-8px_rgba(0,0,0,0.06)] px-4 py-3 rounded-2xl pointer-events-auto">
-                        <button
-                            onClick={() => {
-                                setIsRulerActive(!isRulerActive);
-                                resetMeasurement();
-                            }}
-                            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black transition-all ${
-                                isRulerActive 
-                                    ? "bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-none" 
-                                    : "bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            }`}
-                        >
-                            <Ruler size={14} />
-                            <span>측정 {isRulerActive ? "ON" : "OFF"}</span>
-                        </button>
-                        
-                        {(points.length > 0) && (
-                            <button
-                                onClick={resetMeasurement}
-                                className="p-2 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-gray-950 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                title="측정 초기화"
-                            >
-                                <RotateCcw size={14} />
-                            </button>
-                        )}
-                        
-                        <div className="w-[1px] h-4 bg-gray-100 dark:bg-gray-800"></div>
+                    {/* 모델 투명도 슬라이더 (우측 하단 — 실제 ViewerUI와 동일한 UI) */}
+                    <div className="absolute bottom-6 right-6 z-30 flex flex-col items-end gap-3.5">
+                        {DEMO_MODELS.map((model) => {
+                            const opacity = opacities[model.type];
+                            const isVisible = opacity > 0;
+                            return (
+                                <div key={model.type} className="flex items-center gap-3 group">
+                                    {/* 가시성 토글 버튼 */}
+                                    <button
+                                        onClick={() => handleToggleVisibility(model.type)}
+                                        className={`sm:w-8 sm:h-8 w-10 h-10 flex items-center justify-center rounded-xl transition-all shadow-sm active:scale-90 ${
+                                            isVisible
+                                                ? 'bg-gradient-to-br from-blue-500/80 to-indigo-600/80 text-white shadow-blue-500/20'
+                                                : 'bg-white/80 backdrop-blur-sm text-gray-400 border border-gray-200'
+                                        }`}
+                                        title={MODEL_LABELS[model.type]}
+                                    >
+                                        {isVisible ? <Eye size={15} /> : <EyeOff size={15} />}
+                                    </button>
 
-                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider select-none whitespace-nowrap">
+                                    {/* 투명도 슬라이더 */}
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="1"
+                                            step="0.05"
+                                            value={opacity}
+                                            onChange={(e) => handleOpacityChange(model.type, parseFloat(e.target.value))}
+                                            className="w-28 h-2 bg-white/20 rounded-full appearance-none cursor-pointer accent-blue-500 backdrop-blur-md shadow-sm"
+                                        />
+                                        <span className="text-[10px] font-mono font-bold text-blue-500/80 w-8 text-right">
+                                            {Math.round(opacity * 100)}%
+                                        </span>
+                                    </div>
+
+                                    {/* 모델 타입 레이블 */}
+                                    <span
+                                        className="text-[10px] font-bold text-gray-500 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-lg border border-gray-200/60 min-w-[36px] text-center"
+                                        style={{ color: model.type === 'design' ? '#6366f1' : '#92400e' }}
+                                    >
+                                        {MODEL_LABELS[model.type]}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Demo Mode 배지 */}
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
+                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider select-none bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200/60 dark:border-gray-700/60">
                             Demo Mode
                         </span>
                     </div>
@@ -385,5 +381,3 @@ export default function InteractiveDemo() {
         </section>
     );
 }
-
-

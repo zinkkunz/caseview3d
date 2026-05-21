@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useMemo, Suspense, useRef, useCallback } from 'react';
 import { AlertCircle } from 'lucide-react';
@@ -38,8 +38,8 @@ interface FileItem {
     originalType: 'scan' | 'design';
 }
 
-const DEFAULT_COLOR = '#fff6cc';
-const DEFAULT_DESIGN_COLOR = '#fafafa';
+const DEFAULT_COLOR = '#C8B06A';        // 덴탈 골드 베이지 (사진 기준)
+const DEFAULT_DESIGN_COLOR = '#DCDCDC'; // 라이트 그레이 보철 (사진 기준)
 const DEFAULT_BG_COLOR = '#f5f5f4';
 
 export default function ViewerClient({

@@ -108,7 +108,7 @@ export default function Model({
         }
     }, [geometry, onLoaded]);
 
-    const defaultColor = type === 'design' ? '#d4d4d4' : '#E6C9A8';
+    const defaultColor = type === 'design' ? '#DCDCDC' : '#C8B06A'; // 사진 기준: 덴탈 골드 베이지 / 라이트 그레이
     const finalColor = customColor || defaultColor;
 
     // Determine material preset based on type
