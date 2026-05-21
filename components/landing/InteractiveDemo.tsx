@@ -101,10 +101,12 @@ function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (po
                     }
                 }}
             >
-                <meshPhongMaterial 
-                    color="#E2E8F0" 
-                    shininess={45} 
-                    specular={new THREE.Color('#94A3B8')}
+                {/* 3Shape 명품 덴탈 CAD 뷰어 특유의 은은하고 고품격 있는 반무광 스톤(석고) 질감 구현 */}
+                {/* meshStandardMaterial(PBR)에 거칠기(roughness={0.75})와 금속성 제거(metalness={0.05})를 적용하여 하얀 반사 빛번짐을 완벽 해소합니다. */}
+                <meshStandardMaterial 
+                    color="#E6D7BA" // 따뜻하고 차분한 3Shape 덴탈 베이지 석고 고유 색상 매칭
+                    roughness={0.75} // 번쩍이지 않고 매우 보드랍게 입체 명암이 떨어지도록 높은 거칠기 부여
+                    metalness={0.05} // 금속 광택 전면 배제
                     side={THREE.DoubleSide} 
                 />
             </mesh>
@@ -270,7 +272,6 @@ export default function InteractiveDemo() {
                         }>
                             {/* camera 설정을 Canvas의 속성으로 초기 영구 고정하여 OrbitControls 시점 뒤틀림 원천 제어 */}
                             <Canvas 
-                                shadows 
                                 gl={{ antialias: true }} 
                                 camera={{ position: [0, 3.5, 4.5], fov: 45 }}
                                 onPointerOver={() => setIsHovered(true)}
@@ -278,14 +279,34 @@ export default function InteractiveDemo() {
                                 className="w-full h-full cursor-grab active:cursor-grabbing"
                             >
                                 <color attach="background" args={['#f8fafc']} />
-                                <ambientLight intensity={0.7} />
+                                
+                                {/* [3Shape 명품 CAD 뷰어 4방향 정밀 다중 입체 조명 시스템 셋업] */}
+                                {/* 주변광 상향 조정으로 그늘 속에 파묻히는 잇몸 굴곡의 하단 명암 대비 보존 */}
+                                <ambientLight intensity={0.8} />
+                                
+                                {/* 1. Key Light (정면 우상단): 잇몸 및 치조골 표면의 가장 결정적인 굴곡과 마진 라인 추출 */}
                                 <directionalLight 
-                                    position={[5, 10, 5]} 
-                                    intensity={1.2} 
-                                    castShadow 
-                                    shadow-mapSize={[2048, 2048]} 
+                                    position={[5, 6, 5]} 
+                                    intensity={0.75} 
                                 />
-                                <pointLight position={[-5, 5, -5]} intensity={0.6} />
+                                
+                                {/* 2. Fill Light (정면 좌상단): 키 라이트로 인해 반대편에 발생하는 시꺼먼 그림자 완벽 제거 */}
+                                <directionalLight 
+                                    position={[-5, 5, 5]} 
+                                    intensity={0.65} 
+                                />
+                                
+                                {/* 3. Rear Light (후방 상단): 잇몸 뒤편 보철물 뒤쪽의 볼륨감과 입체 경계 확보 */}
+                                <directionalLight 
+                                    position={[0, 5, -5]} 
+                                    intensity={0.45} 
+                                />
+                                
+                                {/* 4. Bottom Light (하단): 잇몸 밑바닥과 앞니 밑그림자가 검게 뭉개지는 현상 차단 */}
+                                <directionalLight 
+                                    position={[0, -5, 0]} 
+                                    intensity={0.35} 
+                                />
                                 
                                 <DemoModel url="/samples/demo-scan.stl" onPointSelected={handlePointSelected} />
                                 <MeasurementOverlay points={points} />
@@ -355,4 +376,5 @@ export default function InteractiveDemo() {
         </section>
     );
 }
+
 
