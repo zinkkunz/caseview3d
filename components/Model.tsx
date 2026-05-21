@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useLoader } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei'; // Added useGLTF
@@ -23,33 +23,21 @@ interface ModelProps {
     onPointerDown?: (event: any) => void;
 }
 
-// Swapped material presets as requested
+// Phong Material presets for 3Shape style rendering
 const MAT = {
-    // Used for Scans (Maxilla/Mandible) -> Now Matte
+    // Used for Scans (Maxilla/Mandible) -> Matte with soft specular highlighting
     tooth: {
-        metalness: 0.0,
-        roughness: 0.6,
-        specularIntensity: 0.3,
-        clearcoat: 0.0,
-        clearcoatRoughness: 0.0,
-        envMapIntensity: 0.4,
+        shininess: 30,
+        specular: '#777777',
     },
-    // Used for Design (Crowns) -> Now Glossier
+    // Used for Design (Crowns/Restorations) -> Sharper and glossier specular edge
     restoration: {
-        metalness: 0.0,
-        roughness: 0.5,
-        specularIntensity: 0.4,
-        clearcoat: 0.1,
-        clearcoatRoughness: 0.2,
-        envMapIntensity: 0.5,
+        shininess: 45,
+        specular: '#bbbbbb',
     },
     scanModel: {
-        metalness: 0.0,
-        roughness: 0.5,
-        specularIntensity: 0.3,
-        clearcoat: 0.0,
-        clearcoatRoughness: 0.0,
-        envMapIntensity: 0.3,
+        shininess: 25,
+        specular: '#666666',
     }
 } as const;
 
@@ -133,12 +121,13 @@ export default function Model({
             ref={meshRef}
             geometry={geometry}
             visible={visible}
+            name={type}
             castShadow
             receiveShadow
             onPointerDown={onPointerDown}
         >
-            {/* PBR Material */}
-            <meshPhysicalMaterial {...materialProps} />
+            {/* Phong Material */}
+            <meshPhongMaterial {...materialProps} />
         </mesh>
     );
 }

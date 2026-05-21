@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Settings, X, Palette, Sun, Eye, EyeOff, Share2, MessageSquare, Plus, Check, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -160,12 +160,12 @@ export default function ViewerUI({
             <button
                 onClick={() => setIsOpen(true)}
                 className={cn(
-                    "absolute top-6 right-6 p-3 rounded-full shadow-2xl transition-all z-50 text-white flex items-center justify-center",
-                    "bg-gradient-to-br from-blue-600 to-indigo-700 hover:scale-110 hover:shadow-blue-500/30 active:scale-95",
+                    "absolute top-6 right-6 sm:w-11 sm:h-11 w-12 h-12 rounded-full shadow-2xl transition-all z-50 text-white flex items-center justify-center p-0",
+                    "bg-gradient-to-br from-blue-600 to-indigo-700 hover:scale-110 hover:shadow-blue-500/30 active:scale-95 touch-manipulation",
                     isGuideOpen ? "opacity-0 pointer-events-none translate-x-10" : "opacity-100 translate-x-0 pointer-events-auto"
                 )}
             >
-                <Settings size={22} className="drop-shadow-sm" />
+                <Settings size={20} className="drop-shadow-sm" />
             </button>
 
             {/* QR Code Button */}
@@ -175,10 +175,10 @@ export default function ViewerUI({
             )}>
                 <button
                     onClick={() => setIsQRModalOpen(true)}
-                    className="glass p-3 rounded-full shadow-xl hover:bg-white/50 transition-all text-gray-700 hover:scale-110 active:scale-95 border-white/50"
+                    className="glass sm:w-11 sm:h-11 w-12 h-12 flex items-center justify-center p-0 rounded-full shadow-xl hover:bg-white/50 transition-all text-gray-700 hover:scale-110 active:scale-95 border-white/50 touch-manipulation"
                     title="QR 코드 공유"
                 >
-                    <Share2 size={20} />
+                    <Share2 size={18} />
                 </button>
             </div>
 
@@ -189,10 +189,10 @@ export default function ViewerUI({
             )}>
                 <button
                     onClick={onOpenGuide}
-                    className="glass p-3 rounded-full shadow-xl hover:bg-white/50 transition-all text-gray-700 hover:scale-110 active:scale-95 border-white/50"
+                    className="glass sm:w-11 sm:h-11 w-12 h-12 flex items-center justify-center p-0 rounded-full shadow-xl hover:bg-white/50 transition-all text-gray-700 hover:scale-110 active:scale-95 border-white/50 touch-manipulation"
                     title="사용 가이드"
                 >
-                    <span className="font-extrabold text-lg leading-none">?</span>
+                    <span className="font-extrabold text-base leading-none">?</span>
                 </button>
             </div>
 
@@ -204,18 +204,18 @@ export default function ViewerUI({
                 <button
                     onClick={() => onToggleAnnotationMode(!annotationMode)}
                     className={cn(
-                        "glass p-3 rounded-full shadow-xl transition-all hover:scale-110 active:scale-95 border-white/50",
+                        "glass sm:w-11 sm:h-11 w-12 h-12 flex items-center justify-center p-0 rounded-full shadow-xl transition-all hover:scale-110 active:scale-95 border-white/50 touch-manipulation",
                         annotationMode ? "bg-blue-600 text-white border-blue-400" : "text-gray-700 hover:bg-white/50"
                     )}
                     title="진료 메모 추가"
                 >
-                    <MessageSquare size={20} />
+                    <MessageSquare size={18} />
                 </button>
             </div>
 
             {/* File-based Opacity Sliders (Right Bottom) */}
             <div className={cn(
-                "absolute bottom-6 right-6 z-50 flex flex-col items-end gap-3 transition-all duration-300",
+                "absolute bottom-6 right-6 z-50 flex flex-col items-end gap-3.5 transition-all duration-300",
                 isGuideOpen ? "opacity-0 pointer-events-none translate-y-10" : "opacity-100 translate-y-0 pointer-events-auto"
             )}>
 
@@ -233,17 +233,17 @@ export default function ViewerUI({
                             <button
                                 onClick={() => handleToggleVisibility(file.path)}
                                 className={cn(
-                                    "w-8 h-8 flex items-center justify-center rounded-xl transition-all shadow-sm active:scale-90 touch-manipulation",
+                                    "sm:w-8 sm:h-8 w-11 h-11 flex items-center justify-center rounded-xl transition-all shadow-sm active:scale-90 touch-manipulation",
                                     isVisible
                                         ? "bg-gradient-to-br from-blue-500/80 to-indigo-600/80 text-white shadow-blue-500/20"
                                         : "glass-card bg-gray-200/50 text-gray-400 border-none"
                                 )}
                             >
-                                {isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+                                {isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
                             </button>
 
                             {/* Slider Container */}
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3">
                                 <input
                                     type="range"
                                     min="0"
@@ -251,9 +251,9 @@ export default function ViewerUI({
                                     step="0.05"
                                     value={opacity}
                                     onChange={(e) => onFileOpacityChange(file.path, parseFloat(e.target.value))}
-                                    className="w-32 h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-blue-500 backdrop-blur-md touch-manipulation hover:accent-blue-400 transition-all shadow-sm"
+                                    className="w-32 h-2 bg-white/20 rounded-full appearance-none cursor-pointer accent-blue-500 backdrop-blur-md touch-manipulation hover:accent-blue-400 transition-all shadow-sm"
                                 />
-                                <span className="text-[9px] font-mono font-bold text-blue-500/80 w-6 text-right">
+                                <span className="text-[10px] font-mono font-bold text-blue-500/80 w-8 text-right">
                                     {Math.round(opacity * 100)}%
                                 </span>
                             </div>

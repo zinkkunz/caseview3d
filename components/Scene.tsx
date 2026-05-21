@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
@@ -44,7 +44,7 @@ function ViewControl({ targetView }: { targetView: 'front' | 'left' | 'right' | 
     useFrame(() => {
         if (targetView && controlsRef.current) {
             const controls = controlsRef.current;
-            const distance = 100;
+            const distance = 160; // Increased distance to compensate for narrower fov (25)
             const target = new THREE.Vector3(0, 0, 0);
 
             switch (targetView) {
@@ -64,9 +64,15 @@ function ViewControl({ targetView }: { targetView: 'front' | 'left' | 'right' | 
             ref={controlsRef}
             makeDefault
             enableRotate={true}
-            rotateSpeed={1.0}
+            rotateSpeed={0.8}
+            enableDamping={true}
+            dampingFactor={0.05}
             screenSpacePanning={false}
             target={[0, 0, 0]}
+            touches={{
+                ONE: THREE.TOUCH.ROTATE,
+                TWO: THREE.TOUCH.DOLLY_PAN
+            }}
         />
     );
 }
@@ -85,7 +91,7 @@ export default function Scene({
             <Canvas
                 shadows
                 dpr={[1, 2]}
-                camera={{ position: [0, 0, 100], fov: 45 }}
+                camera={{ position: [0, 0, 160], fov: 25 }} // Adjusted default camera position and fov to 25 for minimal distortion
                 gl={{ localClippingEnabled: true }}
                 onCreated={({ gl }) => {
                     gl.setClearColor(0x000000, 0);

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
@@ -22,16 +22,41 @@ export default function MeasurementTool({ enabled }: MeasurementToolProps) {
         }
     }, [enabled]);
 
-    const handlePointerDown = useCallback((event: any) => {
+    const startPointerPos = useRef<{ x: number; y: number } | null>(null);
+
+    const handlePointerDown = useCallback((event: PointerEvent) => {
         if (!enabled) return;
-        event.stopPropagation();
+        startPointerPos.current = { x: event.clientX, y: event.clientY };
+    }, [enabled]);
+
+    const handlePointerUp = useCallback((event: PointerEvent) => {
+        if (!enabled || !startPointerPos.current) return;
+
+        // Calculate drag distance to separate rotation from point selection
+        const dx = event.clientX - startPointerPos.current.x;
+        const dy = event.clientY - startPointerPos.current.y;
+        const distance = Math.hypot(dx, dy);
+        
+        // Reset start position
+        startPointerPos.current = null;
+
+        // If dragged more than 4px, treat it as camera orbit/rotation, not a point selection
+        if (distance > 4) return;
 
         // Update raycaster with current mouse position
         raycaster.setFromCamera(mouse, camera);
         
-        // Find intersections with all meshes in the scene
-        const intersects = raycaster.intersectObjects(scene.children, true);
-        const validIntersect = intersects.find(intersect => (intersect.object as THREE.Mesh).isMesh);
+        // Find dental model meshes specifically in the scene to avoid clicking guide spheres, lines, or annotations
+        const targetMeshes: THREE.Object3D[] = [];
+        scene.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh && child.name && ['maxilla', 'mandible', 'design'].includes(child.name)) {
+                targetMeshes.push(child);
+            }
+        });
+
+        // Find intersections only with target dental models
+        const intersects = raycaster.intersectObjects(targetMeshes, true);
+        const validIntersect = intersects[0]; // Nearest intersection
 
         if (validIntersect) {
             const newPoint = validIntersect.point.clone();
@@ -42,13 +67,21 @@ export default function MeasurementTool({ enabled }: MeasurementToolProps) {
         }
     }, [enabled, camera, scene, raycaster, mouse]);
 
-    // Track mouse for hover preview
+    // Track mouse for hover preview (only with actual dental meshes)
     useEffect(() => {
         const handleMouseMove = () => {
             if (!enabled) return;
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(scene.children, true);
-            const validIntersect = intersects.find(intersect => (intersect.object as THREE.Mesh).isMesh);
+            
+            const targetMeshes: THREE.Object3D[] = [];
+            scene.traverse((child) => {
+                if ((child as THREE.Mesh).isMesh && child.name && ['maxilla', 'mandible', 'design'].includes(child.name)) {
+                    targetMeshes.push(child);
+                }
+            });
+
+            const intersects = raycaster.intersectObjects(targetMeshes, true);
+            const validIntersect = intersects[0];
             setHoverPoint(validIntersect ? validIntersect.point : null);
         };
 
@@ -56,17 +89,23 @@ export default function MeasurementTool({ enabled }: MeasurementToolProps) {
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, [enabled, camera, scene, raycaster, mouse]);
 
-    // Attach/Detach listener
+    // Attach/Detach pointer down and up listeners
     useEffect(() => {
+        const el = gl.domElement;
         if (enabled) {
-            gl.domElement.addEventListener('pointerdown', handlePointerDown);
-            gl.domElement.style.cursor = 'crosshair';
+            el.addEventListener('pointerdown', handlePointerDown);
+            el.addEventListener('pointerup', handlePointerUp);
+            el.style.cursor = 'crosshair';
         } else {
-            gl.domElement.removeEventListener('pointerdown', handlePointerDown);
-            gl.domElement.style.cursor = 'auto';
+            el.removeEventListener('pointerdown', handlePointerDown);
+            el.removeEventListener('pointerup', handlePointerUp);
+            el.style.cursor = 'auto';
         }
-        return () => gl.domElement.removeEventListener('pointerdown', handlePointerDown);
-    }, [enabled, gl, handlePointerDown]);
+        return () => {
+            el.removeEventListener('pointerdown', handlePointerDown);
+            el.removeEventListener('pointerup', handlePointerUp);
+        };
+    }, [enabled, gl, handlePointerDown, handlePointerUp]);
 
     const distance = useMemo(() => {
         if (points.length === 2) {

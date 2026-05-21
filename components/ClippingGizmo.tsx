@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import { TransformControls } from '@react-three/drei';
+import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
 interface ClippingGizmoProps {
@@ -16,6 +17,7 @@ export default function ClippingGizmo({
     initialConstant = 0
 }: ClippingGizmoProps) {
     const meshRef = useRef<THREE.Mesh>(null);
+    const { controls } = useThree() as any;
 
     // Initial positioning
     useEffect(() => {
@@ -42,6 +44,13 @@ export default function ClippingGizmo({
         onPlaneChange(normal, constant);
     };
 
+    const handleDraggingChange = (event: any) => {
+        if (controls) {
+            // Disable OrbitControls while dragging the gizmo
+            controls.enabled = !event.value;
+        }
+    };
+
     if (!enabled) return null;
 
     return (
@@ -62,7 +71,8 @@ export default function ClippingGizmo({
                 object={meshRef.current || undefined} 
                 mode="translate" 
                 onObjectChange={handleTransform}
-                size={0.6}
+                onDraggingChange={handleDraggingChange}
+                size={0.9}
             />
         </group>
     );
