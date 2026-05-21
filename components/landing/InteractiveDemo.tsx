@@ -10,6 +10,7 @@ import { Ruler, RotateCcw, HelpCircle, Eye } from 'lucide-react';
 // 3D 치아 스캔 모델을 렌더링하는 내부 컴포넌트
 function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (point: THREE.Vector3) => void }) {
     const geometry = useLoader(STLLoader, url);
+    const [modelScale, setModelScale] = useState<number>(1);
     
     // 노멀 연산 명시 (입체 명암 생성 보증)
     if (geometry && !geometry.attributes.normal) {
@@ -22,11 +23,11 @@ function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (po
             geometry.center();
             geometry.computeBoundingSphere();
             const sphere = geometry.boundingSphere;
-            if (sphere) {
-                // 모델이 캔버스 크기에 알맞게 맞추어지도록 스케일 조정
+            if (sphere && sphere.radius > 0) {
+                // 모델이 캔버스 크기에 알맞게 맞추어지도록 스케일 비율 계산
                 const targetRadius = 2.8;
                 const ratio = targetRadius / sphere.radius;
-                geometry.scale(ratio, ratio, ratio);
+                setModelScale(ratio);
             }
         }
     }, [geometry]);
@@ -34,6 +35,7 @@ function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (po
     return (
         <mesh 
             geometry={geometry} 
+            scale={modelScale}
             castShadow 
             receiveShadow
             onClick={(e) => {
@@ -45,9 +47,9 @@ function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (po
             }}
         >
             <meshPhongMaterial 
-                color="#E6C9A8" 
-                shininess={30} 
-                specular={new THREE.Color('#777777')}
+                color="#E2E8F0" 
+                shininess={45} 
+                specular={new THREE.Color('#94A3B8')}
                 side={THREE.DoubleSide} 
             />
         </mesh>
@@ -163,7 +165,7 @@ export default function InteractiveDemo() {
                         </p>
                     </div>
 
-                    <div className="max-w-4xl mx-auto aspect-video md:aspect-[2.1/1] bg-white dark:bg-[#0A0A0A] rounded-[2.5rem] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-800 flex flex-col items-center justify-center gap-3">
+                    <div className="max-w-5xl mx-auto h-[450px] md:h-[600px] w-full bg-white dark:bg-[#0A0A0A] rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,97,255,0.06)] border border-gray-100 dark:border-gray-800 flex flex-col items-center justify-center gap-3">
                         <span className="w-8 h-8 rounded-full border-2 border-dashed border-blue-600 animate-spin"></span>
                         <span className="text-xs text-gray-400 font-bold uppercase tracking-widest animate-pulse">Loading 3D Engine...</span>
                     </div>
@@ -192,7 +194,7 @@ export default function InteractiveDemo() {
                 </div>
 
                 {/* 3D 뷰어 데모 컨테이너 */}
-                <div className="max-w-4xl mx-auto aspect-video md:aspect-[2.1/1] bg-white dark:bg-[#0A0A0A] rounded-[2.5rem] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.04)] border border-gray-100 dark:border-gray-800 relative overflow-hidden group">
+                <div className="max-w-5xl mx-auto h-[450px] md:h-[600px] w-full bg-white dark:bg-[#0A0A0A] rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,97,255,0.06)] border border-gray-100 dark:border-gray-800 relative overflow-hidden group">
                     <Suspense fallback={
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                             <span className="w-8 h-8 rounded-full border-2 border-dashed border-blue-600 animate-spin"></span>
@@ -206,15 +208,15 @@ export default function InteractiveDemo() {
                             onPointerOut={() => setIsHovered(false)}
                             className="w-full h-full cursor-grab active:cursor-grabbing"
                         >
-                            <color attach="background" args={['#ffffff']} />
-                            <ambientLight intensity={1.1} />
+                            <color attach="background" args={['#f8fafc']} />
+                            <ambientLight intensity={0.7} />
                             <directionalLight 
                                 position={[5, 10, 5]} 
-                                intensity={1.5} 
+                                intensity={1.2} 
                                 castShadow 
                                 shadow-mapSize={[2048, 2048]} 
                             />
-                            <pointLight position={[-5, 5, -5]} intensity={0.8} />
+                            <pointLight position={[-5, 5, -5]} intensity={0.6} />
                             
                             <DemoModel url="/samples/demo-scan.stl" onPointSelected={handlePointSelected} />
                             <MeasurementOverlay points={points} />
