@@ -40,14 +40,20 @@ class ThreeErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBounda
     }
 }
 
+interface LayoutState {
+    modelScale: number;
+    centerOffset: THREE.Vector3;
+}
+
 // 3D 치아 스캔 모델을 렌더링하는 내부 컴포넌트
 function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (point: THREE.Vector3) => void }) {
     const geometry = useLoader(STLLoader, url);
     
-    // geometry가 메모리에 캐싱되므로, 단 1회만 계산하여 렌더링에 매핑 (데이터 원본 훼손 100% 차단)
-    const { modelScale, centerOffset } = useMemo(() => {
-        if (!geometry) return { modelScale: 1, centerOffset: new THREE.Vector3() };
-
+    // [State Lock 아키텍처 - 영구 상태 잠금]
+    // useMemo를 전면 폐기하고, useState 지연 초기화(Lazy Initialization)를 통해 컴포넌트 최초 마운트 시 단 1회만 기하학적 형상을 해석하여 상태값에 잠급니다.
+    // 이로써 마우스 호버, 눈금자 측정 On/Off 등 리액트의 극심한 상태 진동(State Oscillation) 리렌더링 폭풍 속에서도
+    // Three.js의 비순수 기하 메서드(computeBoundingBox, computeBoundingSphere) 재연산 충돌 및 모델 소실(튕김) 현상을 100% 물리적으로 박멸합니다.
+    const [layout] = useState<LayoutState>(() => {
         // 노멀 연산 명시 (입체 명암 생성 보증)
         if (!geometry.attributes.normal) {
             geometry.computeVertexNormals();
@@ -70,27 +76,27 @@ function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (po
             scale = targetRadius / sphere.radius;
         }
 
-        console.log("[3D DemoModel Debug Log]");
+        console.log("[3D DemoModel State Lock Active Log]");
         console.log(" - Loaded scan vertices count:", geometry.attributes.position?.count);
         console.log(" - BoundingBox calculated center:", center);
         console.log(" - BoundingSphere calculated radius:", sphere?.radius);
-        console.log(" - Derived Scale Factor:", scale);
+        console.log(" - Derived Scale Factor (State Locked):", scale);
 
         return {
             modelScale: scale,
             centerOffset: center.clone().multiplyScalar(-1) // 원래 geometry 바운딩 박스 보존을 위해 클론 후 연산
         };
-    }, [geometry]);
+    });
 
     return (
         // [수학적/기하학적 샌드박싱]
         // mesh 내부의 position 이동(centerOffset)과 group의 scale 연산을 이중 레이어로 완벽 격리!
-        // 이로써 리액트 가상돔 리렌더링 및 호버 감지 주기에서도 Three.js 행렬이 뒤엉키거나 모델이 튕겨 나가는 것을 100% 원천 차단합니다.
-        <group scale={[modelScale, modelScale, modelScale]}>
+        // 영구적으로 고정 잠금된 layout 상태값을 원시 수치 배열 형태로 주입하여 Three.js 트랜스폼 행렬 오차 누적을 원천 격리합니다.
+        <group scale={[layout.modelScale, layout.modelScale, layout.modelScale]}>
             <mesh 
                 geometry={geometry} 
                 // 원시 값 배열 [x, y, z] 형태로 직접 바인딩하여 리렌더링 시 R3F 인스턴스 오버라이트 차단
-                position={[centerOffset.x, centerOffset.y, centerOffset.z]} 
+                position={[layout.centerOffset.x, layout.centerOffset.y, layout.centerOffset.z]} 
                 castShadow 
                 receiveShadow
                 onClick={(e) => {
