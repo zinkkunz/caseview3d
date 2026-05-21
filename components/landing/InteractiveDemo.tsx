@@ -1,6 +1,6 @@
 'use client';
 
-import { Canvas, useLoader } from '@react-three/fiber';
+import { Canvas, useLoader, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import * as THREE from 'three';
@@ -45,14 +45,42 @@ interface LayoutState {
     centerOffset: THREE.Vector3;
 }
 
+// [카메라 종속 실시간 추적 조명 - 3Shape CAD 판독 명암비의 본질]
+// 모델을 360도 마우스로 돌리더라도 카메라 시선의 우상단에서 메인 평행광이 함께 회전 추적하여,
+// 치아 경계선(Margin Line)과 교합 굴곡의 엣지 그림자가 항상 극도로 선명하고 일관되게 생성되도록 보장합니다.
+function CameraTrackingLight() {
+    const lightRef = useRef<THREE.DirectionalLight>(null);
+
+    useFrame(({ camera }) => {
+        if (lightRef.current) {
+            // 카메라의 현재 쿼터니언을 적용해 로컬 우측 및 상측 방향 벡터 추출
+            const rightVec = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+            const upVec = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+
+            // 카메라 좌표를 기준으로 우상단 오프셋을 더해 라이트 위치 실시간 갱신
+            lightRef.current.position.copy(camera.position);
+            lightRef.current.position.addScaledVector(rightVec, 2.0);
+            lightRef.current.position.addScaledVector(upVec, 2.0);
+        }
+    });
+
+    return (
+        <directionalLight
+            ref={lightRef}
+            intensity={1.8} // 명암비 대비를 극대화하는 강한 강도 부여
+            color="#ffffff"
+            castShadow
+            shadow-bias={-0.0005}
+        />
+    );
+}
+
 // 3D 치아 스캔 모델을 렌더링하는 내부 컴포넌트
 function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (point: THREE.Vector3) => void }) {
     const geometry = useLoader(STLLoader, url);
     
     // [State Lock 아키텍처 - 영구 상태 잠금]
     // useMemo를 전면 폐기하고, useState 지연 초기화(Lazy Initialization)를 통해 컴포넌트 최초 마운트 시 단 1회만 기하학적 형상을 해석하여 상태값에 잠급니다.
-    // 이로써 마우스 호버, 눈금자 측정 On/Off 등 리액트의 극심한 상태 진동(State Oscillation) 리렌더링 폭풍 속에서도
-    // Three.js의 비순수 기하 메서드(computeBoundingBox, computeBoundingSphere) 재연산 충돌 및 모델 소실(튕김) 현상을 100% 물리적으로 박멸합니다.
     const [layout] = useState<LayoutState>(() => {
         // 노멀 연산 명시 (입체 명암 생성 보증)
         if (!geometry.attributes.normal) {
@@ -107,12 +135,12 @@ function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (po
                     }
                 }}
             >
-                {/* 3Shape 명품 덴탈 CAD 뷰어 특유의 은은하고 고품격 있는 반무광 스톤(석고) 질감 구현 */}
-                {/* meshStandardMaterial(PBR)에 거칠기(roughness={0.75})와 금속성 제거(metalness={0.05})를 적용하여 하얀 반사 빛번짐을 완벽 해소합니다. */}
-                <meshStandardMaterial 
-                    color="#E6D7BA" // 따뜻하고 차분한 3Shape 덴탈 베이지 석고 고유 색상 매칭
-                    roughness={0.75} // 번쩍이지 않고 매우 보드랍게 입체 명암이 떨어지도록 높은 거칠기 부여
-                    metalness={0.05} // 금속 광택 전면 배제
+                {/* 3Shape 정품 CAD 뷰어 특유의 화사하고 입체 선명도가 압도적인 덴탈 석고(Stone) 질감 완벽 이식 */}
+                {/* MeshPhongMaterial로 전환하여 엣지가 젖은 듯 정교하고 날카로운 반사 하이라이트막을 형성합니다. */}
+                <meshPhongMaterial 
+                    color="#D8C49F" // 3Shape 시그니처 덴탈 골드-베이지 옐로우 톤 적용
+                    shininess={38}  // 빛번짐 없이 하이라이트가 작고 부드럽게 맺혀 외곽 곡선이 뚜렷해짐
+                    specular="#EAD9BB" // 한 톤 더 밝고 따뜻한 골드 스펙큘러 조율로 화사함 극대화
                     side={THREE.DoubleSide} 
                 />
             </mesh>
@@ -286,33 +314,18 @@ export default function InteractiveDemo() {
                             >
                                 <color attach="background" args={['#f8fafc']} />
                                 
-                                {/* [3Shape 명품 CAD 뷰어 4방향 정밀 다중 입체 조명 시스템 셋업] */}
-                                {/* 주변광 상향 조정으로 그늘 속에 파묻히는 잇몸 굴곡의 하단 명암 대비 보존 */}
-                                <ambientLight intensity={0.8} />
+                                {/* [3Shape 명품 CAD 뷰어 명암/선명도 수렴 극대 대비 조명 아키텍처] */}
+                                {/* 1. 극도로 낮춘 주변광: 전체 뭉개짐을 피하고 입체 그림자 골을 깊게 형성 */}
+                                <ambientLight intensity={0.15} />
                                 
-                                {/* 1. Key Light (정면 우상단): 잇몸 및 치조골 표면의 가장 결정적인 굴곡과 마진 라인 추출 */}
+                                {/* 2. 상부 보조광: 모델 전체의 고른 수직 입체 볼륨 기본값 형성 */}
                                 <directionalLight 
-                                    position={[5, 6, 5]} 
-                                    intensity={0.75} 
-                                />
-                                
-                                {/* 2. Fill Light (정면 좌상단): 키 라이트로 인해 반대편에 발생하는 시꺼먼 그림자 완벽 제거 */}
-                                <directionalLight 
-                                    position={[-5, 5, 5]} 
-                                    intensity={0.65} 
-                                />
-                                
-                                {/* 3. Rear Light (후방 상단): 잇몸 뒤편 보철물 뒤쪽의 볼륨감과 입체 경계 확보 */}
-                                <directionalLight 
-                                    position={[0, 5, -5]} 
+                                    position={[0, 10, 0]} 
                                     intensity={0.45} 
                                 />
                                 
-                                {/* 4. Bottom Light (하단): 잇몸 밑바닥과 앞니 밑그림자가 검게 뭉개지는 현상 차단 */}
-                                <directionalLight 
-                                    position={[0, -5, 0]} 
-                                    intensity={0.35} 
-                                />
+                                {/* 3. 카메라 실시간 추적 조명: 회전해도 형태 경계가 날카롭게 가시화되는 CAD 최적화 핵심 */}
+                                <CameraTrackingLight />
                                 
                                 <DemoModel url="/samples/demo-scan.stl" onPointSelected={handlePointSelected} />
                                 <MeasurementOverlay points={points} />
