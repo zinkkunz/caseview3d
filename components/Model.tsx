@@ -23,21 +23,33 @@ interface ModelProps {
     onPointerDown?: (event: any) => void;
 }
 
-// Phong Material presets for 3Shape style rendering
+// Swapped material presets as requested
 const MAT = {
-    // Used for Scans (Maxilla/Mandible) -> Matte with soft specular highlighting
+    // Used for Scans (Maxilla/Mandible) -> Now Matte
     tooth: {
-        shininess: 30,
-        specular: '#777777',
+        metalness: 0.0,
+        roughness: 0.6,
+        specularIntensity: 0.3,
+        clearcoat: 0.0,
+        clearcoatRoughness: 0.0,
+        envMapIntensity: 0.4,
     },
-    // Used for Design (Crowns/Restorations) -> Sharper and glossier specular edge
+    // Used for Design (Crowns) -> Now Glossier
     restoration: {
-        shininess: 45,
-        specular: '#bbbbbb',
+        metalness: 0.0,
+        roughness: 0.5,
+        specularIntensity: 0.4,
+        clearcoat: 0.1,
+        clearcoatRoughness: 0.2,
+        envMapIntensity: 0.5,
     },
     scanModel: {
-        shininess: 25,
-        specular: '#666666',
+        metalness: 0.0,
+        roughness: 0.5,
+        specularIntensity: 0.3,
+        clearcoat: 0.0,
+        clearcoatRoughness: 0.0,
+        envMapIntensity: 0.3,
     }
 } as const;
 
@@ -121,13 +133,12 @@ export default function Model({
             ref={meshRef}
             geometry={geometry}
             visible={visible}
-            name={type}
             castShadow
             receiveShadow
             onPointerDown={onPointerDown}
         >
-            {/* Phong Material */}
-            <meshPhongMaterial {...materialProps} />
+            {/* PBR Material */}
+            <meshPhysicalMaterial {...materialProps} />
         </mesh>
     );
 }
