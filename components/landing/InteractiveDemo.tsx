@@ -45,6 +45,10 @@ interface LayoutState {
     centerOffset: THREE.Vector3;
 }
 
+// --- 임시 계산용 정적 벡터 선언 (매 프레임 객체 할당 및 GC 부하 0건 보증) ---
+const _right = new THREE.Vector3();
+const _up = new THREE.Vector3();
+
 // [카메라 종속 실시간 추적 조명 - 3Shape CAD 판독 명암비의 본질]
 // 모델을 360도 마우스로 돌리더라도 카메라 시선의 우상단에서 메인 평행광이 함께 회전 추적하여,
 // 치아 경계선(Margin Line)과 교합 굴곡의 엣지 그림자가 항상 극도로 선명하고 일관되게 생성되도록 보장합니다.
@@ -53,14 +57,14 @@ function CameraTrackingLight() {
 
     useFrame(({ camera }) => {
         if (lightRef.current) {
-            // 카메라의 현재 쿼터니언을 적용해 로컬 우측 및 상측 방향 벡터 추출
-            const rightVec = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-            const upVec = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+            // 정적 임시 벡터를 재사용하여 객체 생성 소멸 차단 (GC Zero 보증)
+            _right.set(1, 0, 0).applyQuaternion(camera.quaternion);
+            _up.set(0, 1, 0).applyQuaternion(camera.quaternion);
 
             // 카메라 좌표를 기준으로 우상단 오프셋을 더해 라이트 위치 실시간 갱신
             lightRef.current.position.copy(camera.position);
-            lightRef.current.position.addScaledVector(rightVec, 2.0);
-            lightRef.current.position.addScaledVector(upVec, 2.0);
+            lightRef.current.position.addScaledVector(_right, 2.0);
+            lightRef.current.position.addScaledVector(_up, 2.0);
         }
     });
 
@@ -79,7 +83,7 @@ function CameraTrackingLight() {
 function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (point: THREE.Vector3) => void }) {
     const geometry = useLoader(STLLoader, url);
     
-    // [State Lock 아키텍처 - 영구 상태 잠금]
+    // [State Lock 아키텍처 - 영구 상태 잠금 및 방어적 기하 계산]
     // useMemo를 전면 폐기하고, useState 지연 초기화(Lazy Initialization)를 통해 컴포넌트 최초 마운트 시 단 1회만 기하학적 형상을 해석하여 상태값에 잠급니다.
     const [layout] = useState<LayoutState>(() => {
         // 노멀 연산 명시 (입체 명암 생성 보증)
@@ -87,16 +91,20 @@ function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (po
             geometry.computeVertexNormals();
         }
 
-        // 3D 모델의 꼭짓점을 강제로 변형(center)시키지 않고, 바운딩 박스를 통해 중앙 오프셋 계산
-        geometry.computeBoundingBox();
+        // 이미 바운딩 박스가 계산되어 있다면 중복 연산 배제하여 경합 방어
+        if (!geometry.boundingBox) {
+            geometry.computeBoundingBox();
+        }
         const boundingBox = geometry.boundingBox;
         const center = new THREE.Vector3();
         if (boundingBox) {
             boundingBox.getCenter(center);
         }
 
-        // 바운딩 스피어 반경을 기반으로 메시 자체의 스케일 팩터 산출
-        geometry.computeBoundingSphere();
+        // 이미 바운딩 스피어가 계산되어 있다면 중복 연산 배제
+        if (!geometry.boundingSphere) {
+            geometry.computeBoundingSphere();
+        }
         const sphere = geometry.boundingSphere;
         let scale = 1;
         if (sphere && sphere.radius > 0) {
@@ -123,6 +131,7 @@ function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (po
         <group scale={[layout.modelScale, layout.modelScale, layout.modelScale]}>
             <mesh 
                 geometry={geometry} 
+                dispose={null} // [R3F 캐시 보호] 컴포넌트 마운트 해제 시 geometry가 dispose()되어 캐시 붕괴 및 모델이 증발하는 현상 영구 예방
                 // 원시 값 배열 [x, y, z] 형태로 직접 바인딩하여 리렌더링 시 R3F 인스턴스 오버라이트 차단
                 position={[layout.centerOffset.x, layout.centerOffset.y, layout.centerOffset.z]} 
                 castShadow 
