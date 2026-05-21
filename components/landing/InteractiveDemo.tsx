@@ -1,11 +1,44 @@
 'use client';
 
-import { Canvas, useLoader, useThree } from '@react-three/fiber';
+import { Canvas, useLoader } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import * as THREE from 'three';
-import { useState, useRef, Suspense, useEffect, useMemo } from 'react';
+import React, { useState, useRef, Suspense, useEffect, useMemo } from 'react';
 import { Ruler, RotateCcw, HelpCircle, Eye } from 'lucide-react';
+
+// --- 3D 뷰어 자체 샌드박싱용 에러 경계 컴포넌트 ---
+interface ErrorBoundaryProps {
+    children: React.ReactNode;
+    fallback: (error: Error) => React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+    hasError: boolean;
+    error: Error | null;
+}
+
+class ThreeErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+    constructor(props: ErrorBoundaryProps) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+
+    static getDerivedStateFromError(error: Error) {
+        return { hasError: true, error };
+    }
+
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        console.error("[3D Viewer ErrorBoundary] Caught an error during R3F rendering:", error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError && this.state.error) {
+            return this.props.fallback(this.state.error);
+        }
+        return this.props.children;
+    }
+}
 
 // 3D 치아 스캔 모델을 렌더링하는 내부 컴포넌트
 function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (point: THREE.Vector3) => void }) {
@@ -37,34 +70,45 @@ function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (po
             scale = targetRadius / sphere.radius;
         }
 
+        console.log("[3D DemoModel Debug Log]");
+        console.log(" - Loaded scan vertices count:", geometry.attributes.position?.count);
+        console.log(" - BoundingBox calculated center:", center);
+        console.log(" - BoundingSphere calculated radius:", sphere?.radius);
+        console.log(" - Derived Scale Factor:", scale);
+
         return {
             modelScale: scale,
-            centerOffset: center.multiplyScalar(-1) // 원점 정렬을 위한 역방향 이동 값
+            centerOffset: center.clone().multiplyScalar(-1) // 원래 geometry 바운딩 박스 보존을 위해 클론 후 연산
         };
     }, [geometry]);
 
     return (
-        <mesh 
-            geometry={geometry} 
-            scale={modelScale}
-            position={centerOffset} // geometry를 center()하지 않고 mesh position으로 이동시켜 연산 충돌 차단!
-            castShadow 
-            receiveShadow
-            onClick={(e) => {
-                e.stopPropagation();
-                // Raycast 교차 좌표 전달
-                if (e.point) {
-                    onPointSelected(e.point.clone());
-                }
-            }}
-        >
-            <meshPhongMaterial 
-                color="#E2E8F0" 
-                shininess={45} 
-                specular={new THREE.Color('#94A3B8')}
-                side={THREE.DoubleSide} 
-            />
-        </mesh>
+        // [수학적/기하학적 샌드박싱]
+        // mesh 내부의 position 이동(centerOffset)과 group의 scale 연산을 이중 레이어로 완벽 격리!
+        // 이로써 리액트 가상돔 리렌더링 및 호버 감지 주기에서도 Three.js 행렬이 뒤엉키거나 모델이 튕겨 나가는 것을 100% 원천 차단합니다.
+        <group scale={[modelScale, modelScale, modelScale]}>
+            <mesh 
+                geometry={geometry} 
+                // 원시 값 배열 [x, y, z] 형태로 직접 바인딩하여 리렌더링 시 R3F 인스턴스 오버라이트 차단
+                position={[centerOffset.x, centerOffset.y, centerOffset.z]} 
+                castShadow 
+                receiveShadow
+                onClick={(e) => {
+                    e.stopPropagation();
+                    // Raycast 교차 좌표 전달 (월드 좌표계 그대로 전달)
+                    if (e.point) {
+                        onPointSelected(e.point.clone());
+                    }
+                }}
+            >
+                <meshPhongMaterial 
+                    color="#E2E8F0" 
+                    shininess={45} 
+                    specular={new THREE.Color('#94A3B8')}
+                    side={THREE.DoubleSide} 
+                />
+            </mesh>
+        </group>
     );
 }
 
@@ -121,16 +165,6 @@ function LineBetweenPoints({ start, end }: { start: THREE.Vector3; end: THREE.Ve
     );
 }
 
-// 캔버스 조작 관리를 위한 내부 카메라 튜닝 컴포넌트
-function SceneSettings() {
-    const { camera } = useThree();
-    useEffect(() => {
-        camera.position.set(0, 4, 5);
-        camera.lookAt(0, 0, 0);
-    }, [camera]);
-    return null;
-}
-
 export default function InteractiveDemo() {
     const [mounted, setMounted] = useState(false);
     const [isRulerActive, setIsRulerActive] = useState(false);
@@ -156,6 +190,26 @@ export default function InteractiveDemo() {
     const resetMeasurement = () => {
         setPoints([]);
     };
+
+    const renderErrorFallback = (error: Error) => (
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-red-50/20 dark:bg-red-950/10 text-center transition-all">
+            <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mb-3 animate-bounce">
+                <HelpCircle size={24} />
+            </div>
+            <h3 className="text-sm font-black text-gray-900 dark:text-white mb-1.5">
+                3D 기공 데모 엔진 로딩 불가
+            </h3>
+            <p className="text-[11px] text-red-600 dark:text-red-400 max-w-sm font-semibold mb-4 bg-white dark:bg-gray-900 border border-red-100 dark:border-red-900/30 px-3 py-2 rounded-xl break-all">
+                {error.message || "3D 모델 리소스를 가져오거나 WebGL 컨텍스트를 초기화할 수 없습니다."}
+            </p>
+            <button 
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-md transition-all active:scale-95"
+            >
+                새로고침하여 재시도
+            </button>
+        </div>
+    );
 
     if (!mounted) {
         return (
@@ -207,43 +261,46 @@ export default function InteractiveDemo() {
 
                 {/* 3D 뷰어 데모 컨테이너 */}
                 <div className="max-w-5xl mx-auto h-[450px] md:h-[600px] w-full bg-white dark:bg-[#0A0A0A] rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,97,255,0.06)] border border-gray-100 dark:border-gray-800 relative overflow-hidden group">
-                    <Suspense fallback={
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                            <span className="w-8 h-8 rounded-full border-2 border-dashed border-blue-600 animate-spin"></span>
-                            <span className="text-xs text-gray-400 font-bold uppercase tracking-widest animate-pulse">Loading 3D Engine...</span>
-                        </div>
-                    }>
-                        <Canvas 
-                            shadows 
-                            gl={{ antialias: true }} 
-                            onPointerOver={() => setIsHovered(true)}
-                            onPointerOut={() => setIsHovered(false)}
-                            className="w-full h-full cursor-grab active:cursor-grabbing"
-                        >
-                            <color attach="background" args={['#f8fafc']} />
-                            <ambientLight intensity={0.7} />
-                            <directionalLight 
-                                position={[5, 10, 5]} 
-                                intensity={1.2} 
-                                castShadow 
-                                shadow-mapSize={[2048, 2048]} 
-                            />
-                            <pointLight position={[-5, 5, -5]} intensity={0.6} />
-                            
-                            <DemoModel url="/samples/demo-scan.stl" onPointSelected={handlePointSelected} />
-                            <MeasurementOverlay points={points} />
-                            <SceneSettings />
-                            
-                            <OrbitControls 
-                                enableDamping 
-                                dampingFactor={0.06} 
-                                rotateSpeed={0.8}
-                                maxDistance={15}
-                                minDistance={2}
-                                makeDefault
-                            />
-                        </Canvas>
-                    </Suspense>
+                    <ThreeErrorBoundary fallback={renderErrorFallback}>
+                        <Suspense fallback={
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                                <span className="w-8 h-8 rounded-full border-2 border-dashed border-blue-600 animate-spin"></span>
+                                <span className="text-xs text-gray-400 font-bold uppercase tracking-widest animate-pulse">Loading 3D Engine...</span>
+                            </div>
+                        }>
+                            {/* camera 설정을 Canvas의 속성으로 초기 영구 고정하여 OrbitControls 시점 뒤틀림 원천 제어 */}
+                            <Canvas 
+                                shadows 
+                                gl={{ antialias: true }} 
+                                camera={{ position: [0, 3.5, 4.5], fov: 45 }}
+                                onPointerOver={() => setIsHovered(true)}
+                                onPointerOut={() => setIsHovered(false)}
+                                className="w-full h-full cursor-grab active:cursor-grabbing"
+                            >
+                                <color attach="background" args={['#f8fafc']} />
+                                <ambientLight intensity={0.7} />
+                                <directionalLight 
+                                    position={[5, 10, 5]} 
+                                    intensity={1.2} 
+                                    castShadow 
+                                    shadow-mapSize={[2048, 2048]} 
+                                />
+                                <pointLight position={[-5, 5, -5]} intensity={0.6} />
+                                
+                                <DemoModel url="/samples/demo-scan.stl" onPointSelected={handlePointSelected} />
+                                <MeasurementOverlay points={points} />
+                                
+                                <OrbitControls 
+                                    enableDamping 
+                                    dampingFactor={0.06} 
+                                    rotateSpeed={0.8}
+                                    maxDistance={15}
+                                    minDistance={2}
+                                    makeDefault
+                                />
+                            </Canvas>
+                        </Suspense>
+                    </ThreeErrorBoundary>
 
                     {/* 오버레이 가이드 및 조작 패널 */}
                     <div className="absolute top-4 left-4 z-30 pointer-events-none flex flex-col gap-2">
@@ -298,3 +355,4 @@ export default function InteractiveDemo() {
         </section>
     );
 }
+
