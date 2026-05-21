@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import DropboxHero from '@/components/landing/DropboxHero';
+import InteractiveDemo from '@/components/landing/InteractiveDemo';
 import WorkflowSection from '@/components/landing/WorkflowSection';
 import DetailedFeatures from '@/components/landing/DetailedFeatures';
 import TrustSection from '@/components/landing/TrustSection';
@@ -59,6 +60,7 @@ export default async function Home() {
 
       <div className="pt-20">
         <DropboxHero />
+        <InteractiveDemo />
         <DetailedFeatures />
         <WorkflowSection />
         <TrustSection />

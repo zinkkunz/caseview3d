@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Check, Globe, CreditCard, Lock, Crown, Building2 } from 'lucide-react';
 import { useState } from 'react';
@@ -156,17 +156,17 @@ export default function DropboxPricing() {
                     </p>
 
                     <div className="flex justify-center mt-8">
-                        <div className="inline-flex p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl shadow-inner">
+                        <div className="inline-flex p-1 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-inner">
                             <button
                                 onClick={() => setPaymentMethod('DOMESTIC')}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${paymentMethod === 'DOMESTIC' ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white dark:text-gray-100'}`}
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${paymentMethod === 'DOMESTIC' ? 'bg-white dark:bg-gray-800 text-[#0061FF] shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
                             >
                                 <CreditCard size={16} />
                                 국내 결제
                             </button>
                             <button
                                 onClick={() => setPaymentMethod('GLOBAL')}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${paymentMethod === 'GLOBAL' ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white dark:text-gray-100'}`}
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${paymentMethod === 'GLOBAL' ? 'bg-white dark:bg-gray-800 text-[#0061FF] shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
                             >
                                 <Globe size={16} />
                                 Global
@@ -179,20 +179,20 @@ export default function DropboxPricing() {
                     {plans.map((plan) => (
                         <div
                             key={plan.id}
-                            className={`p-8 flex flex-col rounded-[2rem] transition-all duration-300 hover:scale-[1.02] ${plan.popular
-                                ? 'bg-blue-50 dark:bg-blue-900/10 border-2 border-blue-500 relative shadow-xl'
-                                : 'bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800'
+                            className={`p-8 flex flex-col rounded-[2.5rem] transition-all duration-300 hover:scale-[1.02] ${plan.popular
+                                ? 'bg-blue-50/40 dark:bg-blue-950/10 border-2 border-[#0061FF] relative shadow-[0_32px_64px_-16px_rgba(0,97,255,0.08)]'
+                                : 'bg-gray-50/50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.02)]'
                                 } ${plan.disabled ? 'opacity-70 grayscale' : ''}`}
                         >
                             {plan.popular && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-lg">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#0061FF] text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-200 dark:shadow-none">
                                     Best Value
                                 </div>
                             )}
 
                             <div className="mb-6 text-center">
                                 <div className="text-4xl mb-2">{plan.icon}</div>
-                                <h3 className="text-lg font-black uppercase tracking-widest text-gray-500">{plan.name}</h3>
+                                <h3 className="text-sm font-black uppercase tracking-widest text-gray-400">{plan.name}</h3>
                                 <div className="flex items-baseline justify-center gap-1 my-4">
                                     {plan.priceKRW === 0 && plan.priceUSD === 0 && !plan.disabled ? (
                                         <span className="text-3xl font-black">Free</span>
@@ -212,13 +212,13 @@ export default function DropboxPricing() {
                                 <p className="text-xs font-bold text-gray-400 min-h-[40px]">{plan.description}</p>
                             </div>
 
-                            <ul className="space-y-3 mb-8 flex-1">
+                            <ul className="space-y-3.5 mb-8 flex-1">
                                 {plan.features.map((feature, i) => (
                                     <li key={i} className="flex items-start gap-3">
-                                        <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${plan.popular ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-500'}`}>
+                                        <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${plan.popular ? 'bg-blue-50 text-[#0061FF]' : 'bg-gray-200 text-gray-500'}`}>
                                             <Check size={10} strokeWidth={4} />
                                         </div>
-                                        <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{feature}</span>
+                                        <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">{feature}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -226,11 +226,11 @@ export default function DropboxPricing() {
                             <button
                                 onClick={() => handlePayment(plan)}
                                 disabled={loading === plan.id || plan.disabled}
-                                className={`w-full py-3 rounded-xl text-sm font-bold transition-all ${plan.disabled
+                                className={`w-full py-3.5 rounded-xl text-sm font-black transition-all ${plan.disabled
                                         ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                         : plan.popular
-                                            ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none'
-                                            : 'bg-white text-gray-900 border border-gray-200 hover:bg-gray-50'
+                                            ? 'bg-[#0061FF] text-white hover:bg-[#0052D9] shadow-xl shadow-blue-100 dark:shadow-none hover:-translate-y-0.5 active:scale-[0.98]'
+                                            : 'bg-white dark:bg-[#111] text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900'
                                     }`}
                             >
                                 {loading === plan.id ? '처리 중...' : plan.cta}

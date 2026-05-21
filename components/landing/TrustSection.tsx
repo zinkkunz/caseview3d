@@ -7,19 +7,19 @@ const values = [
         title: '강력한 보안',
         description: '업로드된 파일은 암호화되어 안전하게 보존되며, 설정된 기간 이후 자동으로 영구 삭제됩니다.',
         icon: ShieldCheck,
-        color: 'text-blue-600'
+        color: 'text-[#0061FF]'
     },
     {
         title: '모바일 완벽 지원',
         description: '별도 앱 설치 없이 스마트폰, 태블릿, PC 어디서든 고화질 3D 뷰어를 경험할 수 있습니다.',
         icon: Smartphone,
-        color: 'text-indigo-600'
+        color: 'text-[#0061FF]'
     },
     {
         title: '압도적인 성능',
         description: '대용량 STL 파일도 웹 환경에서 끊김 없이 3D 회전, 줌, 측정이 가능합니다.',
         icon: Zap,
-        color: 'text-orange-500'
+        color: 'text-[#0061FF]'
     }
 ];
 

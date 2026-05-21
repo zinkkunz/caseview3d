@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -33,24 +33,28 @@ export default function FAQSection() {
         <section className="py-24 bg-white dark:bg-black transition-colors duration-300" id="faq">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">자주 묻는 질문</h2>
-                    <p className="text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs font-bold">궁금하신 점을 확인해 보세요</p>
+                    <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-3 tracking-tight">자주 묻는 질문</h2>
+                    <p className="text-gray-400 dark:text-gray-500 uppercase tracking-widest text-[10px] font-bold">궁금하신 점을 빠르게 해결해 드립니다</p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-2">
                     {faqs.map((faq, index) => (
-                        <div key={index} className="border-b border-gray-100 dark:border-gray-800 pb-4">
+                        <div key={index} className="border-b border-gray-100/80 dark:border-gray-900 pb-2">
                             <button
                                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                                className="w-full flex justify-between items-center py-4 text-left group"
+                                className="w-full flex justify-between items-center py-5 text-left group"
                             >
-                                <span className={`text-lg font-bold transition-colors ${openIndex === index ? 'text-blue-600' : 'text-gray-900 dark:text-gray-200 group-hover:text-blue-500'}`}>
+                                <span className={`text-base font-black tracking-tight transition-colors ${openIndex === index ? 'text-[#0061FF]' : 'text-gray-900 dark:text-gray-200 group-hover:text-[#0061FF]'}`}>
                                     {faq.question}
                                 </span>
-                                {openIndex === index ? <ChevronUp className="text-blue-600" /> : <ChevronDown className="text-gray-400" />}
+                                {openIndex === index ? (
+                                    <ChevronUp className="text-[#0061FF] shrink-0 transition-transform duration-300" size={18} strokeWidth={2.5} />
+                                ) : (
+                                    <ChevronDown className="text-gray-400 dark:text-gray-600 group-hover:text-gray-600 shrink-0 transition-transform duration-300" size={18} strokeWidth={2.5} />
+                                )}
                             </button>
-                            <div className={`overflow-hidden transition-all duration-300 ${openIndex === index ? 'max-h-40 opacity-100 mb-4' : 'max-h-0 opacity-0'}`}>
-                                <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm">
+                            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-48 opacity-100 mb-5' : 'max-h-0 opacity-0'}`}>
+                                <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm font-medium pr-6">
                                     {faq.answer}
                                 </p>
                             </div>
