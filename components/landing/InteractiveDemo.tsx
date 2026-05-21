@@ -45,37 +45,25 @@ interface LayoutState {
     centerOffset: THREE.Vector3;
 }
 
-// --- 임시 계산용 정적 벡터 선언 (매 프레임 객체 할당 및 GC 부하 0건 보증) ---
-const _right = new THREE.Vector3();
-const _up = new THREE.Vector3();
-
-// [카메라 종속 실시간 추적 조명 - 3Shape CAD 판독 명암비의 본질]
-// 모델을 360도 마우스로 돌리더라도 카메라 시선의 우상단에서 메인 평행광이 함께 회전 추적하여,
-// 치아 경계선(Margin Line)과 교합 굴곡의 엣지 그림자가 항상 극도로 선명하고 일관되게 생성되도록 보장합니다.
-function CameraTrackingLight() {
-    const lightRef = useRef<THREE.DirectionalLight>(null);
+// --- 카메라 추적 3포인트 조명 (Scene.tsx의 ThreePointLighting과 동일한 아키텍처) ---
+// group의 position/quaternion을 카메라에 실시간 동기화하여 어떤 각도에서도 형태 경계가 선명하게 유지됩니다.
+function DemoThreePointLighting() {
+    const groupRef = useRef<THREE.Group>(null);
 
     useFrame(({ camera }) => {
-        if (lightRef.current) {
-            // 정적 임시 벡터를 재사용하여 객체 생성 소멸 차단 (GC Zero 보증)
-            _right.set(1, 0, 0).applyQuaternion(camera.quaternion);
-            _up.set(0, 1, 0).applyQuaternion(camera.quaternion);
-
-            // 카메라 좌표를 기준으로 우상단 오프셋을 더해 라이트 위치 실시간 갱신
-            lightRef.current.position.copy(camera.position);
-            lightRef.current.position.addScaledVector(_right, 2.0);
-            lightRef.current.position.addScaledVector(_up, 2.0);
+        if (groupRef.current) {
+            // position/quaternion copy는 new THREE.Vector3() 할당이 없으므로 GC Zero 보증
+            groupRef.current.position.copy(camera.position);
+            groupRef.current.quaternion.copy(camera.quaternion);
         }
     });
 
     return (
-        <directionalLight
-            ref={lightRef}
-            intensity={1.8} // 명암비 대비를 극대화하는 강한 강도 부여
-            color="#ffffff"
-            castShadow
-            shadow-bias={-0.0005}
-        />
+        <group ref={groupRef}>
+            <directionalLight position={[10, 10, 10]} intensity={1.0} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.0005} />
+            <directionalLight position={[-10, 0, 10]} intensity={0.5} />
+            <directionalLight position={[0, 10, -10]} intensity={0.5} />
+        </group>
     );
 }
 
@@ -144,13 +132,16 @@ function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (po
                     }
                 }}
             >
-                {/* 3Shape 정품 CAD 뷰어 특유의 화사하고 입체 선명도가 압도적인 덴탈 석고(Stone) 질감 완벽 이식 */}
-                {/* MeshPhongMaterial로 전환하여 엣지가 젖은 듯 정교하고 날카로운 반사 하이라이트막을 형성합니다. */}
-                <meshPhongMaterial 
-                    color="#D8C49F" // 3Shape 시그니처 덴탈 골드-베이지 옐로우 톤 적용
-                    shininess={38}  // 빛번짐 없이 하이라이트가 작고 부드럽게 맺혀 외곽 곡선이 뚜렷해짐
-                    specular="#EAD9BB" // 한 톤 더 밝고 따뜻한 골드 스펙큘러 조율로 화사함 극대화
-                    side={THREE.DoubleSide} 
+                {/* 실제 케이스 뷰어(Model.tsx)와 동일한 PBR 덴탈 베이지 스캔 재질 적용 */}
+                <meshPhysicalMaterial 
+                    color="#E6C9A8"       // 덴탈 베이지 (실제 뷰어 기본색과 동일)
+                    metalness={0.0}
+                    roughness={0.6}       // 스캔 모델 특유의 반무광 질감
+                    specularIntensity={0.3}
+                    clearcoat={0.0}
+                    clearcoatRoughness={0.0}
+                    envMapIntensity={0.4}
+                    side={THREE.DoubleSide}
                 />
             </mesh>
         </group>
@@ -315,6 +306,7 @@ export default function InteractiveDemo() {
                         }>
                             {/* camera 설정을 Canvas의 속성으로 초기 영구 고정하여 OrbitControls 시점 뒤틀림 원천 제어 */}
                             <Canvas 
+                                shadows
                                 gl={{ antialias: true }} 
                                 camera={{ position: [0, 3.5, 4.5], fov: 45 }}
                                 onPointerOver={() => setIsHovered(true)}
@@ -323,26 +315,15 @@ export default function InteractiveDemo() {
                             >
                                 <color attach="background" args={['#f8fafc']} />
                                 
-                                {/* [3Shape 명품 CAD 뷰어 명암/선명도 수렴 극대 대비 조명 아키텍처] */}
-                                {/* 1. 극도로 낮춘 주변광: 전체 뭉개짐을 피하고 입체 그림자 골을 깊게 형성 */}
-                                <ambientLight intensity={0.15} />
-                                
-                                {/* 2. 상부 보조광: 모델 전체의 고른 수직 입체 볼륨 기본값 형성 */}
-                                <directionalLight 
-                                    position={[0, 10, 0]} 
-                                    intensity={0.45} 
-                                />
-                                
-                                {/* 3. 카메라 실시간 추적 조명: 회전해도 형태 경계가 날카롭게 가시화되는 CAD 최적화 핵심 */}
-                                <CameraTrackingLight />
+                                {/* 실제 케이스 뷰어(Scene.tsx)와 동일한 카메라 추적 3포인트 조명 시스템 */}
+                                <ambientLight intensity={0.2} />
+                                <DemoThreePointLighting />
                                 
                                 <DemoModel url="/samples/demo-scan.stl" onPointSelected={handlePointSelected} />
                                 <MeasurementOverlay points={points} />
                                 
                                 <OrbitControls 
-                                    enableDamping 
-                                    dampingFactor={0.06} 
-                                    rotateSpeed={0.8}
+                                    rotateSpeed={1.0}
                                     maxDistance={15}
                                     minDistance={2}
                                     makeDefault
