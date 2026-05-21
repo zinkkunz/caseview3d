@@ -4,38 +4,50 @@ import { Canvas, useLoader, useThree } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import * as THREE from 'three';
-import { useState, useRef, Suspense, useEffect } from 'react';
+import { useState, useRef, Suspense, useEffect, useMemo } from 'react';
 import { Ruler, RotateCcw, HelpCircle, Eye } from 'lucide-react';
 
 // 3D 치아 스캔 모델을 렌더링하는 내부 컴포넌트
 function DemoModel({ url, onPointSelected }: { url: string; onPointSelected: (point: THREE.Vector3) => void }) {
     const geometry = useLoader(STLLoader, url);
-    const [modelScale, setModelScale] = useState<number>(1);
     
-    // 노멀 연산 명시 (입체 명암 생성 보증)
-    if (geometry && !geometry.attributes.normal) {
-        geometry.computeVertexNormals();
-    }
+    // geometry가 메모리에 캐싱되므로, 단 1회만 계산하여 렌더링에 매핑 (데이터 원본 훼손 100% 차단)
+    const { modelScale, centerOffset } = useMemo(() => {
+        if (!geometry) return { modelScale: 1, centerOffset: new THREE.Vector3() };
 
-    // 모델을 캔버스 중앙 정렬 및 스케일 조정
-    useEffect(() => {
-        if (geometry) {
-            geometry.center();
-            geometry.computeBoundingSphere();
-            const sphere = geometry.boundingSphere;
-            if (sphere && sphere.radius > 0) {
-                // 모델이 캔버스 크기에 알맞게 맞추어지도록 스케일 비율 계산
-                const targetRadius = 2.8;
-                const ratio = targetRadius / sphere.radius;
-                setModelScale(ratio);
-            }
+        // 노멀 연산 명시 (입체 명암 생성 보증)
+        if (!geometry.attributes.normal) {
+            geometry.computeVertexNormals();
         }
+
+        // 3D 모델의 꼭짓점을 강제로 변형(center)시키지 않고, 바운딩 박스를 통해 중앙 오프셋 계산
+        geometry.computeBoundingBox();
+        const boundingBox = geometry.boundingBox;
+        const center = new THREE.Vector3();
+        if (boundingBox) {
+            boundingBox.getCenter(center);
+        }
+
+        // 바운딩 스피어 반경을 기반으로 메시 자체의 스케일 팩터 산출
+        geometry.computeBoundingSphere();
+        const sphere = geometry.boundingSphere;
+        let scale = 1;
+        if (sphere && sphere.radius > 0) {
+            const targetRadius = 2.8;
+            scale = targetRadius / sphere.radius;
+        }
+
+        return {
+            modelScale: scale,
+            centerOffset: center.multiplyScalar(-1) // 원점 정렬을 위한 역방향 이동 값
+        };
     }, [geometry]);
 
     return (
         <mesh 
             geometry={geometry} 
             scale={modelScale}
+            position={centerOffset} // geometry를 center()하지 않고 mesh position으로 이동시켜 연산 충돌 차단!
             castShadow 
             receiveShadow
             onClick={(e) => {
