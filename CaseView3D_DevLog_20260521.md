@@ -5,6 +5,15 @@ Next Action: Sprint 2 최종 배포 및 사용자 검토 후 Sprint 3 (어드민
 Tags: #Agent_System #Antigravity #DevLog #Harness #Sprint
 ---
 
+# CaseView3D 개발 로그 (2026-05-22 - 7차 업데이트)
+
+## 📌 [00:38] 구글 OAuth 인증 모듈 상용 배포 연동 및 최종 정상화 완료
+*   **상용 도메인 기반 인증 정상화**: Google Cloud Console 내에서 기존 데스크톱 클라이언트를 탈피하여 `웹 애플리케이션` 유형의 신규 OAuth 클라이언트 ID를 안전하게 생성했습니다.
+*   **승인된 리디렉션 URI 주입**: `https://www.caseview3d.com/api/auth/callback/google` 및 로컬 테스트용 `http://localhost:3000/api/auth/callback/google`을 완벽히 바인딩했습니다.
+*   **Vercel 환경 변수 동기화**: Vercel `caseview3d` 개별 프로젝트 설정 내의 `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`를 새로운 상용 키로 덮어쓰고, `NEXTAUTH_URL` 또한 `https://www.caseview3d.com`로 변경 완료한 뒤 최종 재배포(Redeploy)에 성공하여 **구글 SSO 1초 간편 로그인을 완전히 성공**시켰습니다.
+
+---
+
 # CaseView3D 개발 로그 (2026-05-21 - 6차 업데이트)
 
 ## 📌 [23:44] Sprint 2 (3D 진단 도구 정밀화 및 모바일 터치 개선) 100% 완료 및 Phase 5 세션 인도
