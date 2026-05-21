@@ -1,5 +1,6 @@
-import FindIdForm from "@/components/auth/FindIdForm";
+import { redirect } from 'next/navigation';
 
 export default function FindIdPage() {
-    return <FindIdForm />;
+    redirect('/login');
 }
+
