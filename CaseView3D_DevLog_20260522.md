@@ -1,9 +1,40 @@
 ---
 Project: CaseView3D | Phase: 4
-Current Sprint: Sprint 3 보완 (3D 데모 디버깅 & 3Shape 그래픽 튜닝)
-Next Action: 1. GitHub 원격 저장소 푸시 (git push origin main) 실행 및 Vercel 상용서버 빌드 모니터링 / 2. Sprint 4: 관리자 대시보드 어드민 리팩토링 및 R2 클라우드 데이터 집계 최적화 설계 전입
+Current Sprint: Sprint 3 보완 7차 완결 (랜딩 풀뷰어 교체 + 색상 기본값 사진 동기화 + 모델 소실 RCA 수정)
+Next Action: Vercel 자동 배포 완료 확인 후 Sprint 4(어드민 리팩토링 / R2 데이터 최적화) 기획 설계 전입
 Tags: #Agent_System #Antigravity #DevLog #Harness #Sprint
 ---
+
+## 📌 2026-05-22 7차 긴급 보완: 랜딩 풀뷰어 교체 + 색상 동기화 + 모델 소실 RCA 수정
+
+### 적용 내용
+
+| 항목 | 변경 전 | 변경 후 |
+|---|---|---|
+| **실제 뷰어 재질** | MeshPhongMaterial (Phong) | **MeshPhysicalMaterial (PBR)** — 12월 초기 상태 복원 |
+| **실제 뷰어 FOV** | 25 (telephoto) | **45** — 12월 초기 상태 복원 |
+| **스캔 모델 기본색** | `#fff6cc` / `#E6C9A8` | **`#C8B06A`** (사진 기준 덴탈 골드 베이지) |
+| **디자인 파일 기본색** | `#fafafa` / `#d4d4d4` | **`#DCDCDC`** (사진 기준 라이트 그레이) |
+| **랜딩 3D 데모** | 단일 STL 단순 뷰어 | **풀뷰어: 상악+하악+디자인 3모델 + 투명도 슬라이더** |
+| **랜딩 조명** | 고정 directional+point | **카메라 추적 3포인트 조명 (Scene.tsx 동일)** |
+
+### RCA: 모델 소실 재발 (3 파일 동시 로드 경합)
+- **원인**: 3개 별도 STL 파일(각 4.4MB)을 Suspense 내에서 동시 fetch → 로딩 경합으로 geometry 불안정
+- **해결**: 단일 `demo-scan.stl` URL 공유 → `useLoader` 캐시가 1회 로드 후 3개 컴포넌트에 동일 geometry 제공, 경합 완전 제거
+- **추가 수정**: `onCreated` setClearColor → `<color attach="background">` 방식 복원, 카메라 `[0,3.5,4.5]` 검증된 값으로 복원
+
+### 커밋 이력 (이번 세션)
+- `a058bc1` restore: 케이스 뷰어 12월 초기 상태 복구 (PBR, FOV 45)
+- `23229a8` style: 랜딩 데모 실제 뷰어와 동일 스타일 통일
+- `4a89a91` feat: 랜딩 풀뷰어 교체 + 색상 기본값 사진 동기화
+- `0d1dbe5` fix: 3D 데모 모델 소실 RCA 수정
+
+### GitHub Push 완료
+- `origin/main` ← `0d1dbe5` 동기화 완료 (14개 커밋 일괄 push)
+
+---
+
+
 
 # CaseView3D 개발 일지 (DevLog - 2026.05.22)
 
