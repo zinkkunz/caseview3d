@@ -10,8 +10,12 @@ import SignOutButton from '@/components/SignOutButton';
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) redirect('/login');
-    const adminEmails = process.env.ADMIN_EMAILS?.split(',') || [];
-    const isAdmin = session.user.role === 'ADMIN' || adminEmails.includes(session.user.email);
+    // 어드민 판별: DB role=ADMIN OR 환경변수 OR 하드코드 폴백 (이중 보안)
+    const adminEmails = [
+        ...(process.env.ADMIN_EMAILS?.split(',').map(e => e.trim()) || []),
+        'zinsun0@gmail.com', // 마스터 관리자 계정 (폴백)
+    ];
+    const isAdmin = session.user.role === 'ADMIN' || adminEmails.includes(session.user.email ?? '');
     if (!isAdmin) redirect('/');
 
     return (
