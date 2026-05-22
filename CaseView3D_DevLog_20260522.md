@@ -1,8 +1,21 @@
 ---
 Project: CaseView3D | Phase: 4
-Current Sprint: Sprint 3 보완 7차 완결 (랜딩 풀뷰어 교체 + 색상 기본값 사진 동기화 + 모델 소실 RCA 수정)
-Next Action: Vercel 자동 배포 완료 확인 후 Sprint 4(어드민 리팩토링 / R2 데이터 최적화) 기획 설계 전입
+Current Sprint: Sprint 3 보완 8차 완결 (구글 OAuth 로그인 에러 수정 + 마스터 어드민 zinsun0@gmail.com 등록 및 보안 잠금)
+Next Action: Vercel 배포 완료 후 구글 로그인 연동 성공 여부 및 마스터 어드민 권한 접속 교차 검증
 Tags: #Agent_System #Antigravity #DevLog #Harness #Sprint
+---
+
+## 📌 2026-05-22 8차 긴급 보완: 구글 로그인 연동 에러(OAuthAccountNotLinked) 해결 및 마스터 어드민 추가
+
+### RCA: 구글 로그인 시 '구글 인증 과정에서 오류가 발생했습니다' 에러 규명
+- **현상**: 로그인 시도 시 `?error=OAuthAccountNotLinked` 쿼리와 함께 로그인 실패 및 UI 에러 팝업 발생.
+- **원인**: 이전 단계에서 `zinsun0@gmail.com` 마스터 계정을 데이터베이스에 직접 `upsert`하여 이미 유저 데이터가 존재했으나, NextAuth의 구글 소셜 계정 연동(`Account` 모델) 정보는 없는 상태였습니다. 이 상태에서 구글 간편 로그인을 처음 실행하면, NextAuth는 보안상 동일 이메일의 기존 일반/타소셜 계정이 탈취되거나 오염되는 것을 막기 위해 가입을 차단하고 `OAuthAccountNotLinked` 예외를 던집니다.
+- **해결**: `lib/authOptions.ts`의 `GoogleProvider` 설정에 **`allowDangerousEmailAccountLinking: true`** 옵션을 전격 탑재했습니다. 이를 통해 DB에 이미 동일 이메일 계정이 존재하더라도 안전하게 구글 인증 데이터를 연결하여 즉시 로그인이 가능하도록 조치했습니다.
+
+### 마스터 어드민 권한 및 이중 보안 체계 이식
+- **DB 승격**: Prisma 클라이언트를 활용하여 `zinsun0@gmail.com` 유저의 `role`을 `'ADMIN'`으로 영구 승격 완료.
+- **하드코드 백업 가드**: Vercel 대시보드의 `ADMIN_EMAILS` 환경변수와 무관하게 즉각 작동할 수 있도록 `app/admin/layout.tsx` 내에 하드코드 폴백 리스트에 `zinsun0@gmail.com`을 영구 보장 조치.
+
 ---
 
 ## 📌 2026-05-22 7차 긴급 보완: 랜딩 풀뷰어 교체 + 색상 동기화 + 모델 소실 RCA 수정
