@@ -1,19 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import Logo from '@/components/Logo';
 
 export default function LoginForm({ settings }: { settings: Record<string, string> }) {
     const [loading, setLoading] = useState(false);
+    const [isLocal, setIsLocal] = useState(false);
     const searchParams = useSearchParams();
     
     const authError = searchParams.get('error');
     
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setIsLocal(
+                window.location.hostname === 'localhost' || 
+                window.location.hostname === '127.0.0.1' ||
+                process.env.NODE_ENV === 'development'
+            );
+        }
+    }, []);
+    
     const getErrorMessage = (err: string) => {
         switch (err) {
-            case 'SessionRequired': return '로그인이 필요한 서비스입니다.';
+            case 'SessionRequired': return '로그인이 필요한 service입니다.';
             case 'OAuthSignin':
             case 'OAuthCallback':
             case 'OAuthCreateAccount':
@@ -31,6 +42,19 @@ export default function LoginForm({ settings }: { settings: Record<string, strin
             await signIn('google', { callbackUrl: '/dashboard' });
         } catch (err) {
             console.error('Google Auth Trigger Error:', err);
+            setLoading(false);
+        }
+    };
+
+    const handleDevBypassLogin = async () => {
+        setLoading(true);
+        try {
+            await signIn('credentials', { 
+                email: 'zinsun0@gmail.com', 
+                callbackUrl: '/dashboard' 
+            });
+        } catch (err) {
+            console.error('Dev Bypass Login Error:', err);
             setLoading(false);
         }
     };
@@ -59,6 +83,25 @@ export default function LoginForm({ settings }: { settings: Record<string, strin
                         별도의 회원가입 없이 기존 구글 계정을 사용하여 <br />
                         <strong>1초 만에 즉시 시작</strong>할 수 있습니다.
                     </p>
+
+                    {isLocal && (
+                        <button
+                            onClick={handleDevBypassLogin}
+                            disabled={loading}
+                            className="w-full h-16 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 shadow-[0_8px_20px_-4px_rgba(59,130,246,0.3)] hover:shadow-[0_12px_28px_-6px_rgba(59,130,246,0.4)] transform hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 font-bold"
+                        >
+                            {loading ? (
+                                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            ) : (
+                                <>
+                                    <svg className="w-6 h-6 shrink-0 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    <span>로컬 개발자 1초 마스터 로그인</span>
+                                </>
+                            )}
+                        </button>
+                    )}
 
                     <button
                         onClick={handleGoogleLogin}

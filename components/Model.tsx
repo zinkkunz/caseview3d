@@ -123,7 +123,6 @@ export default function Model({
         vertexColors: (showOriginalColor && isPLY) || useVertexColors,
         side: THREE.DoubleSide,
         clippingPlanes: clippingPlanes && clippingPlanes.length > 0 ? clippingPlanes : null,
-        clipShadows: true
     };
 
     if (!geometry) return null;
@@ -133,8 +132,6 @@ export default function Model({
             ref={meshRef}
             geometry={geometry}
             visible={visible}
-            castShadow
-            receiveShadow
             onPointerDown={onPointerDown}
         >
             {/* PBR Material */}

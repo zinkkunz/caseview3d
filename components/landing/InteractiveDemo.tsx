@@ -28,9 +28,9 @@ function DemoThreePointLighting({ brightness = 1 }: { brightness?: number }) {
     });
     return (
         <group ref={groupRef}>
-            <directionalLight position={[10, 10, 10]} intensity={1.0 * brightness} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.0005} />
-            <directionalLight position={[-10, 0, 10]} intensity={0.5 * brightness} />
-            <directionalLight position={[0, 10, -10]} intensity={0.5 * brightness} />
+            <directionalLight position={[10, 10, 10]} intensity={0.65 * brightness} />
+            <directionalLight position={[-10, 0, 10]} intensity={0.4 * brightness} />
+            <directionalLight position={[0, 10, -10]} intensity={0.4 * brightness} />
         </group>
     );
 }
@@ -80,8 +80,6 @@ function DemoModel({
                 geometry={geometry}
                 dispose={null} // [R3F 캐시 보호] geometry 자동 dispose() 영구 차단
                 position={[layout.centerOffset.x, layout.centerOffset.y, layout.centerOffset.z]}
-                castShadow
-                receiveShadow
             >
                 {/* PBR 재질: 실제 케이스 뷰어(Model.tsx)와 동일 */}
                 <meshPhysicalMaterial
@@ -178,7 +176,6 @@ export default function InteractiveDemo() {
                         <Suspense fallback={loadingUI}>
                             {/* 기존 검증 완료된 Canvas 설정값 사용 */}
                             <Canvas
-                                shadows
                                 gl={{ antialias: true }}
                                 camera={{ position: [0, 3.5, 4.5], fov: 45 }}
                                 className="w-full h-full cursor-grab active:cursor-grabbing"
@@ -186,7 +183,7 @@ export default function InteractiveDemo() {
                                 {/* 기존 검증 완료된 배경색 설정 방식 */}
                                 <color attach="background" args={['#f8fafc']} />
 
-                                <ambientLight intensity={0.2} />
+                                <ambientLight intensity={0.55} />
                                 <DemoThreePointLighting brightness={1} />
 
                                 {/* 3개 모델: 동일 STL URL로 geometry 캐시 공유 → 로딩 경합 없음 */}

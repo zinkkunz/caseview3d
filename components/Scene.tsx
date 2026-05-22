@@ -31,9 +31,9 @@ function ThreePointLighting({ brightness = 1 }: { brightness: number }) {
 
     return (
         <group ref={groupRef}>
-            <directionalLight position={[10, 10, 10]} intensity={1.0 * brightness} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.0005} />
-            <directionalLight position={[-10, 0, 10]} intensity={0.5 * brightness} />
-            <directionalLight position={[0, 10, -10]} intensity={0.5 * brightness} />
+            <directionalLight position={[10, 10, 10]} intensity={0.65 * brightness} />
+            <directionalLight position={[-10, 0, 10]} intensity={0.4 * brightness} />
+            <directionalLight position={[0, 10, -10]} intensity={0.4 * brightness} />
         </group>
     );
 }
@@ -83,7 +83,6 @@ export default function Scene({
     return (
         <div className="w-full h-full relative">
             <Canvas
-                shadows
                 dpr={[1, 2]}
                 camera={{ position: [0, 0, 100], fov: 45 }}
                 gl={{ localClippingEnabled: true }}
@@ -92,7 +91,7 @@ export default function Scene({
                 }}
             >
                 <Suspense fallback={null}>
-                    <ambientLight intensity={0.2 * brightness} />
+                    <ambientLight intensity={0.55 * brightness} />
                     <ThreePointLighting brightness={brightness} />
                     {children}
                     <MeasurementTool enabled={measurementMode} />

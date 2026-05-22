@@ -1,8 +1,24 @@
 ---
 Project: CaseView3D | Phase: 4
-Current Sprint: Sprint 3 보완 8차 완결 (구글 OAuth 로그인 에러 수정 + 마스터 어드민 zinsun0@gmail.com 등록 및 보안 잠금)
-Next Action: Vercel 배포 완료 후 구글 로그인 연동 성공 여부 및 마스터 어드민 권한 접속 교차 검증
+Current Sprint: Sprint 3 보완 9차 로컬 완결 (뷰어 및 데모 물리 그림자 제거 + 어두운 틈새 그늘 제거 조명 튜닝)
+Next Action: 파트너님 로컬 환경(dev server)에서 3D 뷰어 그림자/음영 제거 상태 시각 피드백 대기
 Tags: #Agent_System #Antigravity #DevLog #Harness #Sprint
+---
+
+## 📌 2026-05-22 9차 보완 (로컬): 3D 뷰어 물리 그림자(Shadow Map) 제거 및 어두운 틈새 그늘(Shading) 최소화 조명 튜닝
+
+### 1. 물리적 그림자(Shadow Map) 완전 제거
+- **조치**: 
+  - 실제 뷰어 및 랜딩 데모 뷰어의 `Canvas` 컴포넌트에서 `shadows` 속성을 완전히 제거하여 물리적인 실시간 그림자 맵 기능을 Off 시켰습니다.
+  - `directionalLight`에서 `castShadow` 및 그림자 맵 연산 옵션(`shadow-mapSize`, `shadow-bias`)을 전면 삭제했습니다.
+  - 개별 3D 메쉬 컴포넌트(`<mesh>`)의 `castShadow`, `receiveShadow` 및 머티리얼의 `clipShadows` 속성을 제거하여, 겹치는 메쉬 밑면에 생기는 기분 나쁜 실선 형태의 그림자들을 모두 원천적으로 배제했습니다.
+
+### 2. 3D 메쉬의 칙칙하고 어두운 그늘(Shading) 최소화 튜닝
+- **RCA 및 해결**: 
+  - 3D 메쉬(상/하악 잇몸, 치아)의 굴곡진 곳이나 안쪽 틈새에 빛이 닿지 않아 생기는 어둡고 칙칙한 명암 대비(블랙홀 현상)를 줄이고, 3Shape 치과 CAD의 형태 가독성을 높이기 위해 조명 밸런스를 전격 개편했습니다.
+  - 기존 `ambientLight` (간접 사방 조명)의 조도를 **`0.2` → `0.55`**로 2.7배 이상 대폭 상향하여 메쉬의 그늘진 영역에 사방에서 은은한 간접 광원이 들어가 어두운 블랙 포인트를 화사하게 메워주도록 조치했습니다.
+  - 대신, 너무 눈이 부시거나 형태의 엣지가 날아가는 것을 방지하기 위해 메인 직사광인 `directionalLight` 세기들을 부드럽게 세분화(`0.65`, `0.4`, `0.4`)하여 전체적으로 균일하고 눈에 피로가 없도록 화사한 석고 느낌의 시각 품질을 구축했습니다.
+
 ---
 
 ## 📌 2026-05-22 8차 긴급 보완: 구글 로그인 연동 에러(OAuthAccountNotLinked) 해결 및 마스터 어드민 추가
